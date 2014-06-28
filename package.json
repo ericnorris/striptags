@@ -1,0 +1,14 @@
+{
+    "name": "striptags",
+    "description": "PHP strip_tags in Node.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/ericnorris/striptags.git"
+    },
+    "version": "0.1.0",
+    "dependencies": {
+        "htmlparser2": "3.7.2",
+        "domutils": "1.5.0"
+    },
+    "main": "src/striptags.js"
+}
