@@ -1,12 +1,12 @@
-var htmlparser  = require('htmlparser2');
-var domutils    = require('domutils');
+var htmlparser = require('htmlparser2');
+var domutils   = require('domutils');
 
-module.exports = function(html, allowable_tags) {
-    var allowed_tags = parseAllowableTags(allowable_tags),
+module.exports = function(html, allowableTags) {
+    var allowedTags = parseAllowableTags(allowableTags),
         strippedDom = [],
         domhandler = new htmlparser.DomHandler(function(error, dom) {
             if (!error) {
-                strippedDom = stripDom(dom, allowed_tags);
+                strippedDom = stripDom(dom, allowedTags);
             }
         }),
         parser = new htmlparser.Parser(domhandler);
@@ -18,31 +18,30 @@ module.exports = function(html, allowable_tags) {
     return strippedDom.map(domutils.getOuterHTML).join('');
 };
 
-function stripDom(element, allowed_tags) {
+function stripDom(element, allowedTags) {
     if (Array.isArray(element)) {
         return element.reduce(function(previous, current) {
-            return previous.concat(stripDom(current, allowed_tags));
+            return previous.concat(stripDom(current, allowedTags));
         }, []).filter(Object);
     }
 
     if (element.type == 'tag') {
         if (element.children) {
-            element.children = stripDom(element.children, allowed_tags);
+            element.children = stripDom(element.children, allowedTags);
         }
 
-        return (element.name in allowed_tags ? element : element.children);
+        return (element.name in allowedTags ? element : element.children);
     }
 
     return element;
 }
 
-var tagRegex = /<(w+)>/g;
-function parseAllowableTags(allowable_tags) {
+function parseAllowableTags(allowableTags) {
     var tagRegex = /<(\w+)>/g,
         tags = {},
         match;
 
-    while (match = tagRegex.exec(allowable_tags)) {
+    while (match = tagRegex.exec(allowableTags)) {
         tags[match[1]] = true;
     }
     return tags;

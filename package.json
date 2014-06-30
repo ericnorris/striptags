@@ -7,8 +7,8 @@
     },
     "version": "0.1.0",
     "dependencies": {
-        "htmlparser2": "3.7.2",
-        "domutils": "1.5.0"
+        "htmlparser2": "3.7",
+        "domutils": "1.5"
     },
     "main": "src/striptags.js"
 }
