@@ -2,7 +2,7 @@
     "name": "striptags",
     "description": "PHP strip_tags in Node.js",
     "license": "MIT",
-    "author": "Eric Norris <erictnorris@gmail.com> (https://github.com/ericnorris)",
+    "author": "Eric Norris (https://github.com/ericnorris)",
     "repository": {
         "type": "git",
         "url": "https://github.com/ericnorris/striptags.git"
@@ -19,5 +19,8 @@
         "strip_tags",
         "html"
     ],
-    "main": "src/striptags.js"
+    "main": "src/striptags.js",
+    "jshintConfig": {
+        "node": true
+    }
 }

@@ -1,48 +1,218 @@
-var htmlparser = require('htmlparser2');
-var domutils   = require('domutils');
+'use strict';
 
-module.exports = function(html, allowableTags) {
-    var allowedTags = parseAllowableTags(allowableTags),
-        strippedDom = [],
-        domhandler = new htmlparser.DomHandler(function(error, dom) {
-            if (!error) {
-                strippedDom = stripDom(dom, allowedTags);
+var STATE_OUTPUT      = 0,
+    STATE_HTML        = 1,
+    STATE_PRE_COMMENT = 2,
+    STATE_COMMENT     = 3,
+    WHITESPACE        = /\s/;
+
+function striptags(html, allowableTags) {
+    var state = STATE_OUTPUT,
+        depth = 0,
+        output = '',
+        tagBuffer = '',
+        inQuote = false,
+        i, length, c;
+
+    allowableTags = (allowableTags || '').toLowerCase();
+
+    for (i = 0, length = html.length; i < length; i++) {
+        c = html[i];
+
+        switch (c) {
+            case '<': {
+                // ignore '<' if inside a quote
+                if (inQuote) {
+                    break;
+                }
+
+                // '<' followed by a space is not a valid tag, continue
+                if (html[i + 1] == ' ') {
+                    consumeCharacter(c);
+                    break;
+                }
+
+                // change to STATE_HTML
+                if (state == STATE_OUTPUT) {
+                    state = STATE_HTML;
+
+                    consumeCharacter(c);
+                    break;
+                }
+
+                // ignore additional '<' characters when inside a tag
+                if (state == STATE_HTML) {
+                    depth++;
+                    break;
+                }
+
+                consumeCharacter(c);
+                break;
             }
-        }),
-        parser = new htmlparser.Parser(domhandler);
 
+            case '>': {
+                // something like this is happening: '<<>>'
+                if (depth) {
+                    depth--;
+                    break;
+                }
 
-    parser.write(html);
-    parser.end();
+                // ignore '>' if inside a quote
+                if (inQuote) {
+                    break;
+                }
 
-    return strippedDom.map(domutils.getOuterHTML).join('');
-};
+                // an HTML tag was closed
+                if (state == STATE_HTML) {
+                    inQuote = state = 0;
 
-function stripDom(element, allowedTags) {
-    if (Array.isArray(element)) {
-        return element.reduce(function(previous, current) {
-            return previous.concat(stripDom(current, allowedTags));
-        }, []).filter(Object);
+                    if (allowableTags) {
+                        tagBuffer += '>';
+                        flushTagBuffer();
+                    }
+
+                    break;
+                }
+
+                // '<!' met its ending '>'
+                if (state == STATE_PRE_COMMENT) {
+                    inQuote = state = 0;
+                    tagBuffer = '';
+                    break;
+                }
+
+                // if last two characters were '--', then end comment
+                if (state == STATE_COMMENT &&
+                    html[i - 1] == '-' &&
+                    html[i - 2] == '-') {
+
+                    inQuote = state = 0;
+                    tagBuffer = '';
+                    break;
+                }
+
+                consumeCharacter(c);
+                break;
+            }
+
+            // catch both single and double quotes
+            case '"':
+            case '\'': {
+                if (state == STATE_HTML) {
+                    if (inQuote == c) {
+                        // end quote found
+                        inQuote = false;
+                    } else {
+                        // start quote
+                        inQuote = c;
+                    }
+                }
+
+                consumeCharacter(c);
+                break;
+            }
+
+            case '!': {
+                if (state == STATE_HTML &&
+                    html[i - 1] == '<') {
+
+                    // looks like we might be starting a comment
+                    state = STATE_PRE_COMMENT;
+                    break;
+                }
+
+                consumeCharacter(c);
+                break;
+            }
+
+            case '-': {
+                // if the previous two characters were '!-', this is a comment
+                if (state == STATE_PRE_COMMENT &&
+                    html[i - 1] == '-' &&
+                    html[i - 2] == '!') {
+
+                    state = STATE_COMMENT;
+                    break;
+                }
+
+                consumeCharacter(c);
+                break;
+            }
+
+            case 'E':
+            case 'e': {
+                // check for DOCTYPE, because it looks like a comment and isn't
+                if (state == STATE_PRE_COMMENT &&
+                    html.substr(i - 6).toLowerCase() == 'doctype') {
+
+                    state = STATE_HTML;
+                    break;
+                }
+
+                consumeCharacter(c);
+                break;
+            }
+
+            default: {
+                consumeCharacter(c);
+            }
+        }
     }
 
-    if (element.type == 'tag') {
-        if (element.children) {
-            element.children = stripDom(element.children, allowedTags);
+    return output;
+
+    function consumeCharacter(c) {
+        if (state == STATE_OUTPUT) {
+            output += c;
+        } else if (allowableTags && state == STATE_HTML) {
+            tagBuffer += c;
+        }
+    }
+
+    function flushTagBuffer() {
+        var normalized = '',
+            i, length, c, nonWhitespaceSeen;
+
+        normalizeTagBuffer:
+        for (i = 0, length = tagBuffer.length; i < length; i++) {
+            c = tagBuffer[i].toLowerCase();
+
+            switch (c) {
+                case '<': {
+                    normalized += '<';
+                    break;
+                }
+
+                case '>': {
+                    break normalizeTagBuffer;
+                }
+
+                case '/': {
+                    nonWhitespaceSeen = true;
+                    break;
+                }
+
+                default: {
+                    if (!c.match(WHITESPACE)) {
+                        nonWhitespaceSeen = true;
+                        normalized += tagBuffer[i];
+                    } else if (nonWhitespaceSeen) {
+                        break normalizeTagBuffer;
+                    }
+                }
+            }
+
+            break;
         }
 
-        return (element.name in allowedTags ? element : element.children);
-    }
+        normalized += '>';
 
-    return element;
+        if (allowableTags.indexOf(normalized) !== -1) {
+            output += tagBuffer;
+        }
+
+        tagBuffer = '';
+    }
 }
 
-function parseAllowableTags(allowableTags) {
-    var tagRegex = /<(\w+)>/g,
-        tags = {},
-        match;
-
-    while (match = tagRegex.exec(allowableTags)) {
-        tags[match[1]] = true;
-    }
-    return tags;
-}
+module.exports = striptags;
