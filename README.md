@@ -1,8 +1,11 @@
-# striptags
-An implementation of PHP's [strip_tags](http://www.php.net/manual/en/function.strip-tags.php) in Node.js.
-```
-striptags(html, allowedTags);
-```
+# striptags [![Build Status](https://travis-ci.org/ericnorris/striptags.svg)](https://travis-ci.org/ericnorris/striptags)
+A fast implementation of PHP's [strip_tags](http://www.php.net/manual/en/function.strip-tags.php) in Node.js.
+
+## Changes from v1.0.0
+- Completely rewritten to use a state machine to remove tags (similar to how PHP's strip_tags works)
+- 100% test code coverage
+- Output is no longer constructed from parsing input, so output is identical to input minus HTML tags
+- Zero dependencies
 
 ## Installing
 ```
@@ -10,25 +13,51 @@ npm install striptags
 ```
 
 ## Usage
+```javascript
+striptags(html, allowedTags);
 ```
+
+### Example
+```javascript
 var striptags = require('striptags');
 
-var html = '<html><a href="#meow" class="default">hello world</a><button disabled> I am the walrus</button></html>';
+var html = 
+    '<a href="https://example.com">' +
+        'lorem ipsum <strong>dolor</strong> <em>sit</em> amet' +
+    '</a>';
 
 striptags(html);
-striptags(html, '<a><button>');
+striptags(html, '<a><strong>');
 ```
 
-Output:
+Outputs:
 ```
-'hello world I am the walrus'
+'lorem ipsum dolor sit amet'
 ```
 
 ```
-<a href="meow" class="default">hello world</a><button disabled=""> I am the walrus</button>
+'<a href="https://example.com">lorem ipsum <strong>dolor</strong> sit amet</a>'
+```
+
+## Tests
+You can run tests (powered by [mocha](http://mochajs.org/)) locally via:
+```
+npm test
+```
+
+Generate test coverage (powered by [blanket.js](http://blanketjs.org/)) via :
+```
+npm run test-coverage
+```
+or
+```
+mocha --require blanket -R html-cov > coverage.html
 ```
 
 ## Differences between PHP strip_tags and striptags
-striptags.js uses a full-bodied HTML parser ([htmlparser2](https://github.com/fb55/htmlparser2)) to determine and remove tags from a string, whereas strip_tags uses "the same tag stripping state machine as the fgetss() function."
+In this version, not much! This now closely resembles a 'port' from PHP 5.5's internal implementation of strip_tags, [php_strip_tags_ex](http://lxr.php.net/xref/PHP_5_5/ext/standard/string.c#php_strip_tags_ex).
 
-Because striptags.js uses an actual parser, this should avoid the pitfalls of using a Regular Expression against HTML (see [here](http://stackoverflow.com/a/1732454)).
+One major difference is that this JS version does not strip PHP-style tags (e.g. "<?php echo 'hello'; ?>") - it seemed out of place in a node.js project. Let me know if this is important enough to consider including.
+
+## Don't use regular expressions
+striptags does not use any regular expressions for stripping HTML tags ([this](src/striptags.js#L7) is used for detecting whitespace, not finding HTML). Regular expressions are not capable of preventing all possible scripting attacks (see [this](http://stackoverflow.com/a/535022)). Here is a [great StackOverflow answer](http://stackoverflow.com/a/5793453) regarding how strip_tags (**when used without specifying allowableTags**) is not vulnerable to scripting attacks.
