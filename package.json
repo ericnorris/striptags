@@ -10,9 +10,8 @@
     "homepage": "https://github.com/ericnorris/striptags",
     "bugs": "https://github.com/ericnorris/striptags/issues",
     "version": "1.0.0",
-    "dependencies": {
-        "htmlparser2": "3.7",
-        "domutils": "1.5"
+    "devDependencies": {
+        "mocha": "^2.1.0"
     },
     "keywords": [
         "striptags",
@@ -21,7 +20,7 @@
     ],
     "main": "src/striptags.js",
     "scripts": {
-        "test": "mocha"
+        "test": "node ./node_modules/mocha/bin/mocha"
     },
     "jshintConfig": {
         "node": true
