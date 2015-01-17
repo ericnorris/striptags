@@ -69,4 +69,32 @@ describe('striptags', function() {
 
         assert.equal(strippedHtml, striptags(html, allowedTags));
     });
+
+    it('should strip extra < within tags', function() {
+        var html = '<div<>>lorem ipsum</div>',
+            strippedHtml = '<div>lorem ipsum</div>',
+            allowedTags = '<div>';
+
+        assert.equal(strippedHtml, striptags(html, allowedTags));
+    });
+
+    it('should strip tags within comments', function() {
+        var html = '<!-- <strong>lorem ipsum</strong> --> dolor sit',
+            text = ' dolor sit';
+
+        assert.equal(text, striptags(html));
+    });
+
+    it('should strip comment-like tags', function() {
+        var html = '<! lorem ipsum> dolor sit',
+            text = ' dolor sit';
+
+        assert.equal(text, striptags(html));
+    });
+
+    it('should leave normal exclamation points alone', function() {
+        var text = 'lorem ipsum! dolor sit amet';
+
+        assert.equal(text, striptags(text));
+    });
 });

@@ -159,8 +159,6 @@ function striptags(html, allowableTags) {
         }
     }
 
-    return output;
-
     function consumeCharacter(c) {
         if (state == STATE_OUTPUT) {
             output += c;
@@ -212,6 +210,8 @@ function striptags(html, allowableTags) {
 
         tagBuffer = '';
     }
+
+    return output;
 }
 
 module.exports = striptags;
