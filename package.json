@@ -20,6 +20,9 @@
         "html"
     ],
     "main": "src/striptags.js",
+    "scripts": {
+        "test": "mocha"
+    },
     "jshintConfig": {
         "node": true
     }
