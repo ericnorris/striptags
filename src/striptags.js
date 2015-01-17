@@ -171,7 +171,8 @@ function striptags(html, allowableTags) {
 
     function flushTagBuffer() {
         var normalized = '',
-            i, length, c, nonWhitespaceSeen;
+            nonWhitespaceSeen = false,
+            i, length, c;
 
         normalizeTagBuffer:
         for (i = 0, length = tagBuffer.length; i < length; i++) {
@@ -195,14 +196,12 @@ function striptags(html, allowableTags) {
                 default: {
                     if (!c.match(WHITESPACE)) {
                         nonWhitespaceSeen = true;
-                        normalized += tagBuffer[i];
+                        normalized += c;
                     } else if (nonWhitespaceSeen) {
                         break normalizeTagBuffer;
                     }
                 }
             }
-
-            break;
         }
 
         normalized += '>';
