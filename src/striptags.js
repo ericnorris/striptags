@@ -143,7 +143,7 @@ function striptags(html, allowableTags) {
             case 'e': {
                 // check for DOCTYPE, because it looks like a comment and isn't
                 if (state == STATE_PRE_COMMENT &&
-                    html.substr(i - 6).toLowerCase() == 'doctype') {
+                    html.substr(i - 6, 7).toLowerCase() == 'doctype') {
 
                     state = STATE_HTML;
                     break;

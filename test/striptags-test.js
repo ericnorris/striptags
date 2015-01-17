@@ -50,15 +50,23 @@ describe('striptags', function() {
 
     it('should remove DOCTYPE declaration', function() {
         var html = '<!DOCTYPE html> lorem ipsum',
-            text = 'lorem ipsum';
+            text = ' lorem ipsum';
 
         assert.equal(text, striptags(html));
     });
 
     it('should remove comments', function() {
         var html = '<!-- lorem ipsum --> dolor sit amet',
-            text = 'dolor sit amet';
+            text = ' dolor sit amet';
 
         assert.equal(text, striptags(html));
+    });
+
+    it('should strip <> within quotes', function() {
+        var html = '<a href="<script>">lorem ipsum</a>',
+            strippedHtml = '<a href="script">lorem ipsum</a>',
+            allowedTags = '<a>';
+
+        assert.equal(strippedHtml, striptags(html, allowedTags));
     });
 });
