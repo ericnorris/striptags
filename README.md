@@ -21,13 +21,14 @@ striptags(html, allowedTags);
 ```javascript
 var striptags = require('striptags');
 
-var html = 
+var html =
     '<a href="https://example.com">' +
         'lorem ipsum <strong>dolor</strong> <em>sit</em> amet' +
     '</a>';
 
 striptags(html);
 striptags(html, '<a><strong>');
+striptags(html, ['a']);
 ```
 
 Outputs:
@@ -39,6 +40,11 @@ Outputs:
 '<a href="https://example.com">lorem ipsum <strong>dolor</strong> sit amet</a>'
 ```
 
+```
+'<a href="https://example.com">lorem ipsum dolor sit amet</a>'
+```
+
+
 ## Tests
 You can run tests (powered by [mocha](http://mochajs.org/)) locally via:
 ```
@@ -49,15 +55,13 @@ Generate test coverage (powered by [blanket.js](http://blanketjs.org/)) via :
 ```
 npm run test-coverage
 ```
-or
-```
-mocha --require blanket -R html-cov > coverage.html
-```
 
 ## Differences between PHP strip_tags and striptags
 In this version, not much! This now closely resembles a 'port' from PHP 5.5's internal implementation of strip_tags, [php_strip_tags_ex](http://lxr.php.net/xref/PHP_5_5/ext/standard/string.c#php_strip_tags_ex).
 
-One major difference is that this JS version does not strip PHP-style tags (e.g. "<?php echo 'hello'; ?>") - it seemed out of place in a node.js project. Let me know if this is important enough to consider including.
+One major difference is that this JS version does not strip PHP-style tags; it seemed out of place in a node.js project. Let me know if this is important enough to consider including.
 
-## Don't use regular expressions
-striptags does not use any regular expressions for stripping HTML tags ([this](src/striptags.js#L7) is used for detecting whitespace, not finding HTML). Regular expressions are not capable of preventing all possible scripting attacks (see [this](http://stackoverflow.com/a/535022)). Here is a [great StackOverflow answer](http://stackoverflow.com/a/5793453) regarding how strip_tags (**when used without specifying allowableTags**) is not vulnerable to scripting attacks.
+## Doesn't use regular expressions
+striptags does not use any regular expressions for stripping HTML tags ([these](src/striptags.js#L7-L8) are used for detecting whitespace and parsing the allowedTags parameter, not finding HTML).
+
+Regular expressions are not capable of preventing all possible scripting attacks (see [this](http://stackoverflow.com/a/535022)). Here is a [great StackOverflow answer](http://stackoverflow.com/a/5793453) regarding how strip_tags (**when used without specifying allowableTags**) is not vulnerable to scripting attacks.
