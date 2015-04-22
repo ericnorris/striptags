@@ -18,6 +18,13 @@ describe('striptags', function() {
         assert.equal(striptags(html), text);
     });
 
+    it('should remove self-closing tags', function() {
+        var html = 'text and an <img src="" />',
+            strippedHtml = 'text and an ';
+
+        assert.equal(striptags(html), strippedHtml);
+    });
+
     it('should leave HTML tags if specified', function() {
         var html = '<strong>lorem ipsum</strong>',
             allowedTags = '<strong>';
