@@ -97,4 +97,19 @@ describe('striptags', function() {
 
         assert.equal(text, striptags(text));
     });
+
+    it('should allow an array parameter for allowable tags', function() {
+        var html = '<strong>lorem ipsum</strong>',
+            allowedTags = ['strong'];
+
+        assert.equal(striptags(html, allowedTags), html);
+    });
+
+    it('should strip tags when an empty array is provided', function() {
+        var html = '<article>lorem <a href="#">ipsum</a></article>',
+            allowedTags = [],
+            text = 'lorem ipsum';
+
+        assert.equal(striptags(html, allowedTags), text);
+    });
 });

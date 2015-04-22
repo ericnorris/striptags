@@ -1,10 +1,11 @@
 'use strict';
 
-var STATE_OUTPUT      = 0,
-    STATE_HTML        = 1,
-    STATE_PRE_COMMENT = 2,
-    STATE_COMMENT     = 3,
-    WHITESPACE        = /\s/;
+var STATE_OUTPUT       = 0,
+    STATE_HTML         = 1,
+    STATE_PRE_COMMENT  = 2,
+    STATE_COMMENT      = 3,
+    WHITESPACE         = /\s/,
+    ALLOWED_TAGS_REGEX = /<(\w*)>/g;
 
 function striptags(html, allowableTags) {
     var state = STATE_OUTPUT,
@@ -14,7 +15,13 @@ function striptags(html, allowableTags) {
         inQuote = false,
         i, length, c;
 
-    allowableTags = (allowableTags || '').toLowerCase();
+    if (typeof allowableTags === 'string') {
+        // Parse the string into an array of tags
+        allowableTags = parseAllowableTags(allowableTags);
+    } else if (!Array.isArray(allowableTags)) {
+        // If it is not an array, explicitly set to null
+        allowableTags = null;
+    }
 
     for (i = 0, length = html.length; i < length; i++) {
         c = html[i];
@@ -178,7 +185,6 @@ function striptags(html, allowableTags) {
 
             switch (c) {
                 case '<': {
-                    normalized += '<';
                     break;
                 }
 
@@ -202,8 +208,6 @@ function striptags(html, allowableTags) {
             }
         }
 
-        normalized += '>';
-
         if (allowableTags.indexOf(normalized) !== -1) {
             output += tagBuffer;
         }
@@ -212,6 +216,24 @@ function striptags(html, allowableTags) {
     }
 
     return output;
+}
+
+/**
+ * Return an array containing tags that are allowed to pass through the
+ * algorithm.
+ *
+ * @param string allowableTags A string of tags to allow (e.g. "<b><strong>").
+ * @return array|null An array of allowed tags or null if none.
+ */
+function parseAllowableTags(allowableTags) {
+    var tagsArray = [],
+        match;
+
+    while ((match = ALLOWED_TAGS_REGEX.exec(allowableTags)) !== null) {
+        tagsArray.push(match[1]);
+    }
+
+    return tagsArray.length !== 0 ? tagsArray : null;
 }
 
 module.exports = striptags;
