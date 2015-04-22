@@ -112,4 +112,20 @@ describe('striptags', function() {
 
         assert.equal(striptags(html, allowedTags), text);
     });
+
+    it('should leave allowable tags regardless of ending type, when specified as an array', function() {
+        var html = '<article>lorem ipsum<br> dolor<br /> sit</article>',
+            allowedTags = ['br'],
+            text = 'lorem ipsum<br> dolor<br /> sit';
+
+        assert.equal(striptags(html, allowedTags), text);
+    });
+
+    it('should account for ending type in allowable tags when specified as a string', function() {
+        var html = '<article>lorem ipsum<br> dolor<br /> sit</article>',
+            allowedTags = '<br>',
+            text = 'lorem ipsum<br> dolor sit';
+
+        assert.equal(striptags(html, allowedTags), text);
+    });
 });
