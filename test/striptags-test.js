@@ -18,6 +18,13 @@ describe('striptags', function() {
         assert.equal(striptags(html), text);
     });
 
+    it('should remove self-closing tags', function() {
+        var html = 'text and an <img src="" />',
+            strippedHtml = 'text and an ';
+
+        assert.equal(striptags(html), strippedHtml);
+    });
+
     it('should leave HTML tags if specified', function() {
         var html = '<strong>lorem ipsum</strong>',
             allowedTags = '<strong>';
@@ -109,6 +116,22 @@ describe('striptags', function() {
         var html = '<article>lorem <a href="#">ipsum</a></article>',
             allowedTags = [],
             text = 'lorem ipsum';
+
+        assert.equal(striptags(html, allowedTags), text);
+    });
+
+    it('should leave allowable tags regardless of ending type, when specified as an array', function() {
+        var html = '<article>lorem ipsum<br> dolor<br /> sit</article>',
+            allowedTags = ['br'],
+            text = 'lorem ipsum<br> dolor<br /> sit';
+
+        assert.equal(striptags(html, allowedTags), text);
+    });
+
+    it('should account for ending type in allowable tags when specified as a string', function() {
+        var html = '<article>lorem ipsum<br> dolor<br /> sit</article>',
+            allowedTags = '<br>',
+            text = 'lorem ipsum<br> dolor sit';
 
         assert.equal(striptags(html, allowedTags), text);
     });
