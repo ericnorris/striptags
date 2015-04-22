@@ -9,10 +9,10 @@
     },
     "homepage": "https://github.com/ericnorris/striptags",
     "bugs": "https://github.com/ericnorris/striptags/issues",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "devDependencies": {
-        "blanket": "^1.1.6",
-        "mocha": "^2.1.0"
+        "blanket": "~1.1.6",
+        "mocha": "~2.1.0"
     },
     "keywords": [
         "striptags",
@@ -23,7 +23,7 @@
     ],
     "scripts": {
         "test": "node ./node_modules/mocha/bin/mocha",
-        "test-coverage": "mocha --require blanket -R html-cov > coverage.html"
+        "test-coverage": "node ./node_modules/mocha/bin/mocha --require blanket -R html-cov > coverage.html"
     },
     "jshintConfig": {
         "node": true
