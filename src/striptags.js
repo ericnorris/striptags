@@ -7,17 +7,22 @@ var STATE_OUTPUT       = 0,
     WHITESPACE         = /\s/,
     ALLOWED_TAGS_REGEX = /<(\w*)>/g;
 
+
 function striptags(html, allowableTags) {
     var state = STATE_OUTPUT,
         depth = 0,
         output = '',
         tagBuffer = '',
         inQuote = false,
-        i, length, c;
+        i, length, c, callback;
 
     if (typeof allowableTags === 'string') {
         // Parse the string into an array of tags
         allowableTags = parseAllowableTags(allowableTags);
+    } else if (allowableTags && typeof(allowableTags) === 'function') {
+        // If it is an array, save the function in callback and set allowableTags to null
+        callback = allowableTags;
+        allowableTags = null;
     } else if (!Array.isArray(allowableTags)) {
         // If it is not an array, explicitly set to null
         allowableTags = null;
@@ -215,7 +220,12 @@ function striptags(html, allowableTags) {
         tagBuffer = '';
     }
 
-    return output;
+
+    if (callback) {
+        callback(output);
+    } else {
+        return output;
+    }
 }
 
 /**

@@ -29,6 +29,9 @@ var html =
 striptags(html);
 striptags(html, '<a><strong>');
 striptags(html, ['a']);
+striptags(html, function(result){
+    return result;
+});
 ```
 
 Outputs:
@@ -43,7 +46,9 @@ Outputs:
 ```
 '<a href="https://example.com">lorem ipsum dolor sit amet</a>'
 ```
-
+```
+'lorem ipsum dolor sit amet'
+```
 
 ## Tests
 You can run tests (powered by [mocha](http://mochajs.org/)) locally via:
