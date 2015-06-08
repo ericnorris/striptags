@@ -112,4 +112,12 @@ describe('striptags', function() {
 
         assert.equal(striptags(html, allowedTags), text);
     });
+    it('should work with a callback function', function() {
+        var html = '<article>lorem <a href="#">ipsum</a></article>',
+            text = 'lorem ipsum';
+        striptags(html, function(result){
+            assert.equal(result, text);
+        });
+    });
+
 });
