@@ -112,4 +112,12 @@ describe('striptags', function() {
 
         assert.equal(striptags(html, allowedTags), text);
     });
+
+    it('should not fail with nested quotes', function() {
+        var html = '<article attr="foo \'bar\'">lorem</article> ipsum',
+            allowedTags = [],
+            text = 'lorem ipsum';
+
+        assert.equal(striptags(html, allowedTags), text);
+    });
 });
