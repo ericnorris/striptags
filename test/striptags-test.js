@@ -112,4 +112,12 @@ describe('striptags', function() {
 
         assert.equal(striptags(html, allowedTags), text);
     });
+
+    it('should allow quotes within attributes', function() {
+        var html = '<article attr="foo \'bar\'">lorem <a href="#">ipsum</a></article>',
+            allowedTags = [],
+            text = 'lorem ipsum';
+
+        assert.equal(striptags(html, allowedTags), text);
+    });
 });

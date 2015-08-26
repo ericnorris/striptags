@@ -109,8 +109,8 @@ function striptags(html, allowableTags) {
                     if (inQuote == c) {
                         // end quote found
                         inQuote = false;
-                    } else {
-                        // start quote
+                    } else if (! inQuote) {
+                        // start quote only if not already in one
                         inQuote = c;
                     }
                 }
