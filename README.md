@@ -1,11 +1,11 @@
 # striptags [![Build Status](https://travis-ci.org/ericnorris/striptags.svg)](https://travis-ci.org/ericnorris/striptags)
 A fast implementation of PHP's [strip_tags](http://www.php.net/manual/en/function.strip-tags.php) in Node.js.
 
-## Changes from v1.0.0
-- Completely rewritten to use a state machine to remove tags (similar to how PHP's strip_tags works)
-- 100% test code coverage
-- Output is no longer constructed from parsing input, so output is identical to input minus HTML tags
+## Features
+- Fast
 - Zero dependencies
+- 100% test code coverage
+- No unsafe regular expressions!
 
 ## Installing
 ```
