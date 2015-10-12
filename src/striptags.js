@@ -8,7 +8,8 @@ var STATE_OUTPUT       = 0,
     ALLOWED_TAGS_REGEX = /<(\w*)>/g;
 
 function striptags(html, allowableTags) {
-    var state = STATE_OUTPUT,
+    var html = html || '',
+        state = STATE_OUTPUT,
         depth = 0,
         output = '',
         tagBuffer = '',
