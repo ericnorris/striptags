@@ -11,7 +11,7 @@
         module.exports = factory();
     } else {
         // Browser globals (root is window)
-        root.returnExports = factory();
+        root.striptags = factory();
   }
 }(this, function () {
     var STATE_OUTPUT       = 0,
