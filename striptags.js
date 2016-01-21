@@ -38,6 +38,10 @@
             allowableTags = null;
         }
 
+        if(typeof html !== 'string') {
+            return html;
+        }
+
         for (i = 0, length = html.length; i < length; i++) {
             c = html[i];
 
