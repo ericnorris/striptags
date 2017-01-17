@@ -21,7 +21,7 @@
     const WHITESPACE         = /\s/;
     const ALLOWED_TAGS_REGEX = /<(\w*)>/g;
 
-    function striptags(html = '', allowableTags) {
+    function striptags(html = '', allowableTags = [], tagReplacement = '') {
         var state = STATE_OUTPUT,
             depth = 0,
             output = '',
@@ -224,6 +224,8 @@
 
             if (allowableTags.indexOf(normalized) !== -1) {
                 output += tagBuffer;
+            } else if (tagReplacement) {
+                output += tagReplacement;
             }
 
             tagBuffer = '';
