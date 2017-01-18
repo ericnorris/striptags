@@ -129,7 +129,7 @@ describe('striptags', function() {
         assert.equal(striptags(html, allowedTags), text);
     });
 
-    it('should replace with the replaceTag parameter', function() {
+    it('should replace with the tagReplacement parameter', function() {
         var html = 'Line One<br>Line Two',
             allowedTags = [],
             tagReplacement = '\n',
