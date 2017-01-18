@@ -12,17 +12,19 @@
     } else {
         // Browser globals (root is window)
         root.striptags = factory();
-    }
+  }
 }(this, function () {
-    const STATE_OUTPUT       = 0;
-    const STATE_HTML         = 1;
-    const STATE_PRE_COMMENT  = 2;
-    const STATE_COMMENT      = 3;
-    const WHITESPACE         = /\s/;
-    const ALLOWED_TAGS_REGEX = /<(\w*)>/g;
 
-    function striptags(html = '', allowableTags = [], tagReplacement = '') {
-        var state = STATE_OUTPUT,
+    var STATE_OUTPUT       = 0,
+        STATE_HTML         = 1,
+        STATE_PRE_COMMENT  = 2,
+        STATE_COMMENT      = 3,
+        WHITESPACE         = /\s/,
+        ALLOWED_TAGS_REGEX = /<(\w*)>/g;
+
+    function striptags(html, allowableTags, tagReplacement) {
+        var html = html || '',
+            state = STATE_OUTPUT,
             depth = 0,
             output = '',
             tagBuffer = '',
