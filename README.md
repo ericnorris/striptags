@@ -14,7 +14,7 @@ npm install striptags
 
 ## Usage
 ```javascript
-striptags(html, allowedTags);
+striptags(html, allowedTags, tagReplacement);
 ```
 
 ### Example
@@ -29,6 +29,7 @@ var html =
 striptags(html);
 striptags(html, '<a><strong>');
 striptags(html, ['a']);
+striptags(html, [], '\n');
 ```
 
 Outputs:
@@ -42,6 +43,13 @@ Outputs:
 
 ```
 '<a href="https://example.com">lorem ipsum dolor sit amet</a>'
+```
+
+```
+
+lorem ipsum
+dolor
+ sit amet
 ```
 
 
