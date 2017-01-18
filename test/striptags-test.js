@@ -11,6 +11,18 @@ describe('striptags', function() {
         assert.equal(striptags(text), text);
     });
 
+    it('should not modify a type that is not string', function() {
+        var n = 23456.78;
+        var b = true;
+        var d = new Date();
+        var o = {};
+
+        assert.equal(striptags(n), n);
+        assert.equal(striptags(b), b);
+        assert.equal(striptags(d), d);
+        assert.equal(striptags(o), o);
+    });
+
     it('should remove simple HTML tags', function() {
         var html = '<a href="">lorem <strong>ipsum</strong></a>',
             text = 'lorem ipsum';
