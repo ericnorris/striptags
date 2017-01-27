@@ -1,258 +1,215 @@
 'use strict';
 
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define([], factory);
-    } else if (typeof module === 'object' && module.exports) {
-        // Node. Does not work with strict CommonJS, but
-        // only CommonJS-like environments that support module.exports,
-        // like Node.
-        module.exports = factory();
-    } else {
-        // Browser globals (root is window)
-        root.striptags = factory();
-  }
-}(this, function () {
+(function (global) {
 
-    var STATE_OUTPUT       = 0,
-        STATE_HTML         = 1,
-        STATE_PRE_COMMENT  = 2,
-        STATE_COMMENT      = 3,
-        WHITESPACE         = /\s/,
-        ALLOWED_TAGS_REGEX = /<(\w*)>/g;
+    const STATE_PLAINTEXT = Symbol('plaintext');
+    const STATE_HTML      = Symbol('html');
+    const STATE_COMMENT   = Symbol('comment');
 
-    function striptags(html, allowableTags, tagReplacement) {
-        var html = html || '',
-            state = STATE_OUTPUT,
-            depth = 0,
-            output = '',
-            tagBuffer = '',
-            inQuote = false,
-            i, length, c;
+    const ALLOWED_TAGS_REGEX  = /<(\w*)>/g;
+    const NORMALIZE_TAG_REGEX = /<\/?([^\s\/>]+)/;
 
-        if (typeof allowableTags === 'string') {
-            // Parse the string into an array of tags
-            allowableTags = parseAllowableTags(allowableTags);
-        } else if (!Array.isArray(allowableTags)) {
-            // If it is not an array, explicitly set to null
-            allowableTags = null;
-        }
+    function striptags(html, allowable_tags, tag_replacement) {
+        html            = html || '';
+        allowable_tags  = allowable_tags || [];
+        tag_replacement = tag_replacement || '';
 
-        for (i = 0, length = html.length; i < length; i++) {
-            c = html[i];
+        let context = init_context(allowable_tags, tag_replacement);
 
-            switch (c) {
-                case '<': {
-                    // ignore '<' if inside a quote
-                    if (inQuote) {
+        return striptags_internal(html, context);
+    }
+
+    function init_striptags_stream(allowable_tags, tag_replacement) {
+        allowable_tags  = allowable_tags || [];
+        tag_replacement = tag_replacement || '';
+
+        let context = init_context(allowable_tags, tag_replacement);
+
+        return function striptags_stream(html) {
+            return striptags_internal(html || '', context);
+        };
+    }
+
+    striptags.init_streaming_mode = init_striptags_stream;
+
+    function init_context(allowable_tags, tag_replacement) {
+        allowable_tags = parse_allowable_tags(allowable_tags);
+
+        return {
+            allowable_tags,
+            tag_replacement,
+
+            state         : STATE_PLAINTEXT,
+            tag_buffer    : '',
+            depth         : 0,
+            in_quote_char : ''
+        };
+    }
+
+    function striptags_internal(html, context) {
+        let allowable_tags  = context.allowable_tags;
+        let tag_replacement = context.tag_replacement;
+
+        let state         = context.state;
+        let tag_buffer    = context.tag_buffer;
+        let depth         = context.depth;
+        let in_quote_char = context.in_quote_char;
+        let output        = '';
+
+        for (let idx = 0, length = html.length; idx < length; idx++) {
+            let char = html[idx];
+
+            if (state === STATE_PLAINTEXT) {
+                switch (char) {
+                    case '<':
+                        state       = STATE_HTML;
+                        tag_buffer += char;
                         break;
-                    }
 
-                    // '<' followed by a space is not a valid tag, continue
-                    if (html[i + 1] == ' ') {
-                        consumeCharacter(c);
+                    default:
+                        output += char;
                         break;
-                    }
+                }
+            }
 
-                    // change to STATE_HTML
-                    if (state == STATE_OUTPUT) {
-                        state = STATE_HTML;
+            else if (state === STATE_HTML) {
+                switch (char) {
+                    case '<':
+                        // ignore '<' if inside a quote
+                        if (in_quote_char) {
+                            break;
+                        }
 
-                        consumeCharacter(c);
-                        break;
-                    }
-
-                    // ignore additional '<' characters when inside a tag
-                    if (state == STATE_HTML) {
+                        // we're seeing a nested '<'
                         depth++;
                         break;
-                    }
 
-                    consumeCharacter(c);
-                    break;
-                }
-
-                case '>': {
-                    // something like this is happening: '<<>>'
-                    if (depth) {
-                        depth--;
-                        break;
-                    }
-
-                    // ignore '>' if inside a quote
-                    if (inQuote) {
-                        break;
-                    }
-
-                    // an HTML tag was closed
-                    if (state == STATE_HTML) {
-                        inQuote = state = 0;
-
-                        if (allowableTags) {
-                            tagBuffer += '>';
-                            flushTagBuffer();
+                    case '>':
+                        // ignore '>' if inside a quote
+                        if (in_quote_char) {
+                            break;
                         }
 
-                        break;
-                    }
+                        // something like this is happening: '<<>>'
+                        if (depth) {
+                            depth--;
 
-                    // '<!' met its ending '>'
-                    if (state == STATE_PRE_COMMENT) {
-                        inQuote = state = 0;
-                        tagBuffer = '';
-                        break;
-                    }
-
-                    // if last two characters were '--', then end comment
-                    if (state == STATE_COMMENT &&
-                        html[i - 1] == '-' &&
-                        html[i - 2] == '-') {
-
-                        inQuote = state = 0;
-                        tagBuffer = '';
-                        break;
-                    }
-
-                    consumeCharacter(c);
-                    break;
-                }
-
-                // catch both single and double quotes
-                case '"':
-                case '\'': {
-                    if (state == STATE_HTML) {
-                        if (inQuote == c) {
-                            // end quote found
-                            inQuote = false;
-                        } else if (!inQuote) {
-                            // start quote only if not already in one
-                            inQuote = c;
+                            break;
                         }
-                    }
 
-                    consumeCharacter(c);
-                    break;
-                }
+                        // this is closing the tag in tag_buffer
+                        in_quote_char = '';
+                        state         = STATE_PLAINTEXT;
+                        tag_buffer   += '>';
 
-                case '!': {
-                    if (state == STATE_HTML &&
-                        html[i - 1] == '<') {
+                        if (allowable_tags.has(normalize_tag(tag_buffer))) {
+                            output += tag_buffer;
+                        } else {
+                            output += tag_replacement;
+                        }
 
-                        // looks like we might be starting a comment
-                        state = STATE_PRE_COMMENT;
+                        tag_buffer = '';
                         break;
-                    }
 
-                    consumeCharacter(c);
-                    break;
-                }
+                    case '"':
+                    case '\'':
+                        // catch both single and double quotes
 
-                case '-': {
-                    // if the previous two characters were '!-', this is a comment
-                    if (state == STATE_PRE_COMMENT &&
-                        html[i - 1] == '-' &&
-                        html[i - 2] == '!') {
+                        if (char === in_quote_char) {
+                            in_quote_char = '';
+                        } else {
+                            in_quote_char = in_quote_char || char;
+                        }
 
-                        state = STATE_COMMENT;
+                        tag_buffer += char;
                         break;
-                    }
 
-                    consumeCharacter(c);
-                    break;
-                }
+                    case '-':
+                        if (tag_buffer === '<!-') {
+                            state = STATE_COMMENT;
+                        }
 
-                case 'E':
-                case 'e': {
-                    // check for DOCTYPE, because it looks like a comment and isn't
-                    if (state == STATE_PRE_COMMENT &&
-                        html.substr(i - 6, 7).toLowerCase() == 'doctype') {
-
-                        state = STATE_HTML;
+                        tag_buffer += char;
                         break;
-                    }
 
-                    consumeCharacter(c);
-                    break;
+                    case ' ':
+                    case '\n':
+                        if (tag_buffer === '<') {
+                            state      = STATE_PLAINTEXT;
+                            output    += '< ';
+                            tag_buffer = '';
+
+                            break;
+                        }
+
+                        tag_buffer += char;
+                        break;
+
+                    default:
+                        tag_buffer += char;
+                        break;
                 }
+            }
 
-                default: {
-                    consumeCharacter(c);
+            else if (state === STATE_COMMENT) {
+                switch (char) {
+                    case '>':
+                        if (tag_buffer.slice(-2) == '--') {
+                            // close the comment
+                            state = STATE_PLAINTEXT;
+                        }
+
+                        tag_buffer = '';
+                        break;
+
+                    default:
+                        tag_buffer += char;
+                        break;
                 }
             }
         }
 
-        function consumeCharacter(c) {
-            if (state == STATE_OUTPUT) {
-                output += c;
-            } else if (allowableTags && state == STATE_HTML) {
-                tagBuffer += c;
-            }
-        }
-
-        function flushTagBuffer() {
-            var normalized = '',
-                nonWhitespaceSeen = false,
-                i, length, c;
-
-            normalizeTagBuffer:
-            for (i = 0, length = tagBuffer.length; i < length; i++) {
-                c = tagBuffer[i].toLowerCase();
-
-                switch (c) {
-                    case '<': {
-                        break;
-                    }
-
-                    case '>': {
-                        break normalizeTagBuffer;
-                    }
-
-                    case '/': {
-                        nonWhitespaceSeen = true;
-                        break;
-                    }
-
-                    default: {
-                        if (!c.match(WHITESPACE)) {
-                            nonWhitespaceSeen = true;
-                            normalized += c;
-                        } else if (nonWhitespaceSeen) {
-                            break normalizeTagBuffer;
-                        }
-                    }
-                }
-            }
-
-            if (allowableTags.indexOf(normalized) !== -1) {
-                output += tagBuffer;
-            } else if (tagReplacement) {
-                output += tagReplacement;
-            }
-
-            tagBuffer = '';
-        }
+        // save the context for future iterations
+        context.state         = state;
+        context.tag_buffer    = tag_buffer;
+        context.depth         = depth;
+        context.in_quote_char = in_quote_char;
 
         return output;
     }
 
-    /**
-     * Return an array containing tags that are allowed to pass through the
-     * algorithm.
-     *
-     * @param string allowableTags A string of tags to allow (e.g. "<b><strong>").
-     * @return array|null An array of allowed tags or null if none.
-     */
-    function parseAllowableTags(allowableTags) {
-        var tagsArray = [],
-            match;
+    function parse_allowable_tags(allowable_tags) {
+        let tags_array = [];
 
-        while ((match = ALLOWED_TAGS_REGEX.exec(allowableTags)) !== null) {
-            tagsArray.push(match[1]);
+        if (typeof allowable_tags === 'string') {
+            let match;
+
+            while ((match = ALLOWED_TAGS_REGEX.exec(allowable_tags)) !== null) {
+                tags_array.push(match[1]);
+            }
         }
 
-        return tagsArray.length !== 0 ? tagsArray : null;
+        else if (typeof allowable_tags[Symbol.iterator] === 'function') {
+            tags_array = allowable_tags;
+        }
+
+        return new Set(tags_array);
     }
 
-    return striptags;
-}));
+    function normalize_tag(tag_buffer) {
+        let match = NORMALIZE_TAG_REGEX.exec(tag_buffer);
+
+        return match ? match[1].toLowerCase() : null;
+    }
+
+    if (typeof define === 'function' && define.amd) {
+        // AMD
+        define([], striptags);
+    } else if (typeof module === 'object' && module.exports) {
+        // Node
+        module.exports = striptags;
+    } else {
+        // Browser
+        global.striptags = striptags;
+    }
+}(this));
