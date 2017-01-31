@@ -1,140 +1,148 @@
 'use strict';
-
-var assert = require('assert'),
-    striptags = require('../');
-
 /* global describe, it */
+
+let assert    = require('assert');
+let fs        = require('fs');
+let vm        = require('vm');
+let striptags = require('../');
+
+
 describe('striptags', function() {
-    it('should not modify plain text', function() {
-        var text = 'lorem ipsum < a>';
+    describe('#module', function() {
+        let path   = require.resolve('../');
+        let src    = fs.readFileSync(path);
+        let script = new vm.Script(src);
 
-        assert.equal(striptags(text), text);
+        it('should define a node module', function() {
+            let module = { exports: {} };
+
+            script.runInNewContext({module});
+
+            assert.notEqual(module.exports, {});
+        });
+
+        it('should define an amd module', function() {
+            let global = {};
+            let define = function(dependencies, module) {
+                global.defined = module;
+            };
+
+            define.amd = true;
+
+            script.runInNewContext({global, define});
+
+            assert.notEqual(global.defined, null);
+        });
+
+        it('should define a browser global', function() {
+            let global = {};
+
+            script.runInNewContext(global);
+
+            assert.notEqual(global.striptags, null);
+        });
     });
 
-    it('should remove simple HTML tags', function() {
-        var html = '<a href="">lorem <strong>ipsum</strong></a>',
-            text = 'lorem ipsum';
+    describe('with no optional parameters', function() {
+        it('should not strip invalid tags', function() {
+            let text = 'lorem ipsum < a> < div>';
 
-        assert.equal(striptags(html), text);
+            assert.equal(striptags(text), text);
+        });
+
+        it('should remove simple HTML tags', function() {
+            let html = '<a href="">lorem <strong>ipsum</strong></a>',
+                text = 'lorem ipsum';
+
+            assert.equal(striptags(html), text);
+        });
+
+        it('should remove comments', function() {
+            let html = '<!-- lorem -- ipsum -- --> dolor sit amet',
+                text = ' dolor sit amet';
+
+            assert.equal(striptags(html), text);
+        });
+
+        it('should strip tags within comments', function() {
+            let html = '<!-- <strong>lorem ipsum</strong> --> dolor sit',
+                text = ' dolor sit';
+
+            assert.equal(striptags(html), text);
+        });
+
+
+        it('should not fail with nested quotes', function() {
+            let html = '<article attr="foo \'bar\'">lorem</article> ipsum',
+                text = 'lorem ipsum';
+
+            assert.equal(striptags(html), text);
+        });
     });
 
-    it('should leave HTML tags if specified', function() {
-        var html = '<strong>lorem ipsum</strong>',
-            allowedTags = '<strong>';
+    describe('#allowed_tags', function() {
+        it('should parse a string', function() {
+            let html = '<strong>lorem ipsum</strong>',
+                allowed_tags = '<strong>';
 
-        assert.equal(striptags(html, allowedTags), html);
+            assert.equal(striptags(html, allowed_tags), html);
+        });
+
+        it('should take an array', function() {
+            let html = '<strong>lorem <em>ipsum</em></strong>',
+                allowed_tags = ['strong', 'em'];
+
+            assert.equal(striptags(html, allowed_tags), html);
+        });
     });
 
-    it('should leave attributes when allowing HTML', function() {
-        var html = '<a href="https://example.com">lorem ipsum</a>',
-            allowedTags = '<a>';
+    describe('with allowable_tags parameter', function() {
+        it('should leave attributes when allowing HTML', function() {
+            let html = '<a href="https://example.com">lorem ipsum</a>',
+                allowed_tags = '<a>';
 
-        assert.equal(striptags(html, allowedTags), html);
+            assert.equal(striptags(html, allowed_tags), html);
+        });
+
+        it('should strip extra < within tags', function() {
+            let html = '<div<>>lorem ipsum</div>',
+                text = '<div>lorem ipsum</div>',
+                allowed_tags = '<div>';
+
+            assert.equal(striptags(html, allowed_tags), text);
+        });
+
+        it('should strip <> within quotes', function() {
+            let html = '<a href="<script>">lorem ipsum</a>',
+                text = '<a href="script">lorem ipsum</a>',
+                allowed_tags = '<a>';
+
+            assert.equal(striptags(html, allowed_tags), text);
+        });
     });
 
-    it('should leave nested HTML tags if specified', function() {
-        var html = '<div>lorem <strong>ipsum</strong></div>',
-            strippedHtml = 'lorem <strong>ipsum</strong>',
-            allowedTags = '<strong>';
+    describe('with tag_replacement parameter', function() {
+        it('should replace tags with that parameter', function() {
+            var html = 'Line One<br>Line Two',
+                allowed_tags = [],
+                tag_replacement = '\n',
+                text = 'Line One\nLine Two';
 
-        assert.equal(striptags(html, allowedTags), strippedHtml);
+            assert.equal(striptags(html, allowed_tags, tag_replacement), text);
+        });
     });
 
-    it('should leave outer HTML tags if specified', function() {
-        var html = '<div>lorem <strong>ipsum</strong></div>',
-            strippedHtml = '<div>lorem ipsum</div>',
-            allowedTags = '<div>';
+    describe('#streaming_mode', function() {
+        it('should strip streamed HTML', function() {
+            let striptags_stream = striptags.init_streaming_mode();
 
-        assert.equal(striptags(html, allowedTags), strippedHtml);
-    });
+            let part_one   = striptags_stream('lorem ipsum <stro');
+            let part_two   = striptags_stream('ng>dolor sit <');
+            let part_three = striptags_stream(' amet');
 
-    it('should remove DOCTYPE declaration', function() {
-        var html = '<!DOCTYPE html> lorem ipsum',
-            text = ' lorem ipsum';
-
-        assert.equal(striptags(html), text);
-    });
-
-    it('should remove comments', function() {
-        var html = '<!-- lorem ipsum --> dolor sit amet',
-            text = ' dolor sit amet';
-
-        assert.equal(striptags(html), text);
-    });
-
-    it('should strip <> within quotes', function() {
-        var html = '<a href="<script>">lorem ipsum</a>',
-            strippedHtml = '<a href="script">lorem ipsum</a>',
-            allowedTags = '<a>';
-
-        assert.equal(striptags(html, allowedTags), strippedHtml);
-    });
-
-    it('should strip extra < within tags', function() {
-        var html = '<div<>>lorem ipsum</div>',
-            strippedHtml = '<div>lorem ipsum</div>',
-            allowedTags = '<div>';
-
-        assert.equal(striptags(html, allowedTags), strippedHtml);
-    });
-
-    it('should strip tags within comments', function() {
-        var html = '<!-- <strong>lorem ipsum</strong> --> dolor sit',
-            text = ' dolor sit';
-
-        assert.equal(striptags(html), text);
-    });
-
-    it('should strip comment-like tags', function() {
-        var html = '<! lorem ipsum> dolor sit',
-            text = ' dolor sit';
-
-        assert.equal(striptags(html), text);
-    });
-
-    it('should leave normal exclamation points alone', function() {
-        var text = 'lorem ipsum! dolor sit amet';
-
-        assert.equal(striptags(text), text);
-    });
-
-    it('should allow an array parameter for allowable tags', function() {
-        var html = '<strong>lorem <em>ipsum</em></strong>',
-            allowedTags = ['strong', 'em'];
-
-        assert.equal(striptags(html, allowedTags), html);
-    });
-
-    it('should strip tags when an empty array is provided', function() {
-        var html = '<article>lorem <a href="#">ipsum</a></article>',
-            allowedTags = [],
-            text = 'lorem ipsum';
-
-        assert.equal(striptags(html, allowedTags), text);
-    });
-
-    it('should not fail with nested quotes', function() {
-        var html = '<article attr="foo \'bar\'">lorem</article> ipsum',
-            allowedTags = [],
-            text = 'lorem ipsum';
-
-        assert.equal(striptags(html, allowedTags), text);
-    });
-
-    it('should strip the tag\'s properties and attributes', function() {
-        var html = '<a href="http://google.com" title="foo" data-id="0">Click here</a>',
-            allowedTags = [],
-            text = 'Click here';
-
-        assert.equal(striptags(html, allowedTags), text);
-    });
-
-    it('should replace with the tagReplacement parameter', function() {
-        var html = 'Line One<br>Line Two',
-            allowedTags = [],
-            tagReplacement = '\n',
-            text = 'Line One\nLine Two';
-
-        assert.equal(striptags(html, allowedTags, tagReplacement), text);
+            assert.equal(part_one, 'lorem ipsum ');
+            assert.equal(part_two, 'dolor sit ');
+            assert.equal(part_three, '< amet');
+        });
     });
 });
