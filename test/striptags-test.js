@@ -144,5 +144,17 @@ describe('striptags', function() {
             assert.equal(part_two, 'dolor sit ');
             assert.equal(part_three, '< amet');
         });
+
+        it('should work with allowable_tags', function() {
+            let striptags_stream = striptags.init_streaming_mode(['strong']);
+
+            let part_one   = striptags_stream('lorem ipsum <stro');
+            let part_two   = striptags_stream('ng>dolor sit <');
+            let part_three = striptags_stream(' amet');
+
+            assert.equal(part_one, 'lorem ipsum ');
+            assert.equal(part_two, '<strong>dolor sit ');
+            assert.equal(part_three, '< amet');
+        });
     });
 });
