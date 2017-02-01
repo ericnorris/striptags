@@ -5,16 +5,16 @@ An implementation of PHP's [strip_tags](http://www.php.net/manual/en/function.st
 - Fast
 - Zero dependencies
 - 100% test code coverage
-- No unsafe regular expressions!
+- No unsafe regular expressions
 
 ## Installing
 ```
 npm install striptags
 ```
 
-## Usage
+## Basic Usage
 ```javascript
-striptags(html, allowedTags, tagReplacement);
+striptags(html, allowed_tags, tag_replacement);
 ```
 
 ### Example
@@ -27,7 +27,7 @@ var html =
     '</a>';
 
 striptags(html);
-striptags(html, '<a><strong>');
+striptags(html, '<strong>');
 striptags(html, ['a']);
 striptags(html, [], '\n');
 ```
@@ -38,7 +38,7 @@ Outputs:
 ```
 
 ```
-'<a href="https://example.com">lorem ipsum <strong>dolor</strong> sit amet</a>'
+lorem ipsum <strong>dolor</strong> sit amet'
 ```
 
 ```
@@ -52,6 +52,20 @@ dolor
  sit amet
 ```
 
+## Streaming Mode
+`striptags` can also operate in streaming mode. Simply call `init_streaming_mode` to get back a function that accepts HTML and outputs stripped HTML. State is saved between calls so that partial HTML can be safely passed in.
+
+```javascript
+let stream_function = striptags.init_streaming_mode(
+    allowed_tags,
+    tag_replacement
+);
+
+let partial_text = stream_function(partial_html);
+let more_text    = stream_function(more_html);
+```
+
+Check out [test/striptags-test.js](test/striptags-test.js) for a concrete example.
 
 ## Tests
 You can run tests (powered by [mocha](http://mochajs.org/)) locally via:
@@ -59,17 +73,13 @@ You can run tests (powered by [mocha](http://mochajs.org/)) locally via:
 npm test
 ```
 
-Generate test coverage (powered by [blanket.js](http://blanketjs.org/)) via :
+Generate test coverage (powered by [istanbul](https://github.com/gotwarlost/istanbul)) via :
 ```
-npm run test-coverage
+npm run coverage
 ```
 
-## Differences between PHP strip_tags and striptags
-In this version, not much! This now closely resembles a 'port' from PHP 5.5's internal implementation of strip_tags, [php_strip_tags_ex](http://lxr.php.net/xref/PHP_5_5/ext/standard/string.c#php_strip_tags_ex).
-
-One major difference is that this JS version does not strip PHP-style tags; it seemed out of place in a node.js project. Let me know if this is important enough to consider including.
 
 ## Doesn't use regular expressions
-striptags does not use any regular expressions for stripping HTML tags ([these](src/striptags.js#L7-L8) are used for detecting whitespace and parsing the allowedTags parameter, not finding HTML).
+`striptags` does not use any regular expressions for stripping HTML tags.
 
 Regular expressions are not capable of preventing all possible scripting attacks (see [this](http://stackoverflow.com/a/535022)). Here is a [great StackOverflow answer](http://stackoverflow.com/a/5793453) regarding how strip_tags (**when used without specifying allowableTags**) is not vulnerable to scripting attacks.
