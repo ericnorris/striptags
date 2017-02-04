@@ -204,7 +204,9 @@
 
     if (typeof define === 'function' && define.amd) {
         // AMD
-        define([], striptags);
+        define([], function(){
+          return striptags;
+        });
     }
 
     else if (typeof module === 'object' && module.exports) {
