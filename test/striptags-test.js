@@ -13,25 +13,25 @@ describe('striptags', function() {
         let src    = fs.readFileSync(path);
         let script = new vm.Script(src);
 
-        it('should define a node module', function() {
+        it('should define a Node module', function() {
             let module = { exports: {} };
 
             script.runInNewContext({module});
 
-            assert.notEqual(module.exports, {});
+            assert.equal(module.exports.toString(), striptags.toString());
         });
 
-        it('should define an amd module', function() {
-            let global = {};
-            let define = function(dependencies, module) {
-                global.defined = module;
+        it('should define an AMD module', function() {
+            let module = null;
+            let define = function(module_factory) {
+                module = module_factory();
             };
 
             define.amd = true;
 
-            script.runInNewContext({global, define});
+            script.runInNewContext({define});
 
-            assert.notEqual(global.defined, null);
+            assert.equal(module.toString(), striptags.toString());
         });
 
         it('should define a browser global', function() {
