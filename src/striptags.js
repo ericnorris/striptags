@@ -102,10 +102,11 @@
                         state         = STATE_PLAINTEXT;
                         tag_buffer   += '>';
 
-                        if (allowable_tags.has(normalize_tag(tag_buffer))) {
+                        const normalized_tag = normalize_tag(tag_buffer);
+                        if (allowable_tags.has(normalized_tag)) {
                             output += tag_buffer;
                         } else {
-                            output += tag_replacement;
+                            output += typeof tag_replacement === 'function' ? tag_replacement(normalized_tag) : tag_replacement;
                         }
 
                         tag_buffer = '';
