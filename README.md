@@ -1,6 +1,11 @@
 # striptags [![Build Status](https://travis-ci.org/ericnorris/striptags.svg)](https://travis-ci.org/ericnorris/striptags)
 An implementation of PHP's [strip_tags](http://www.php.net/manual/en/function.strip-tags.php) in Node.js.
 
+**Note:** `v3+` targets ES6, and is therefore incompatible with the maaster branch of `uglifyjs`. You can either:
+- use `babili`, which supports ES6
+- use the `harmony` branch of `uglifyjs`
+- stick with the [2.x.x](https://github.com/ericnorris/striptags/tree/v2.x.x) branch
+
 ## Features
 - Fast
 - Zero dependencies
