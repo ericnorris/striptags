@@ -5,6 +5,7 @@
     const STATE_PLAINTEXT = Symbol('plaintext');
     const STATE_HTML      = Symbol('html');
     const STATE_COMMENT   = Symbol('comment');
+    const STATE_STYLE   = Symbol('style');
 
     const ALLOWED_TAGS_REGEX  = /<(\w*)>/g;
     const NORMALIZE_TAG_REGEX = /<\/?([^\s\/>]+)/;
@@ -46,6 +47,10 @@
         };
     }
 
+    function checkForStyles(){
+
+    }
+
     function striptags_internal(html, context) {
         let allowable_tags  = context.allowable_tags;
         let tag_replacement = context.tag_replacement;
@@ -55,6 +60,7 @@
         let depth         = context.depth;
         let in_quote_char = context.in_quote_char;
         let output        = '';
+        let styleTag = '';
 
         for (let idx = 0, length = html.length; idx < length; idx++) {
             let char = html[idx];
@@ -70,6 +76,13 @@
                         output += char;
                         break;
                 }
+            }
+
+            else if (state === STATE_STYLE) {
+              console.log(char)
+              if(char === '<'){
+                state = STATE_HTML
+              }
             }
 
             else if (state === STATE_HTML) {
@@ -99,16 +112,21 @@
 
                         // this is closing the tag in tag_buffer
                         in_quote_char = '';
-                        state         = STATE_PLAINTEXT;
                         tag_buffer   += '>';
 
-                        if (allowable_tags.has(normalize_tag(tag_buffer))) {
-                            output += tag_buffer;
-                        } else {
-                            output += tag_replacement;
+
+                        if(tag_buffer === "<style>"){
+                          state = STATE_STYLE;
+                        }else{
+                          state = STATE_PLAINTEXT;
+                          if (allowable_tags.has(normalize_tag(tag_buffer))) {
+                              output += tag_buffer;
+                          } else {
+                              output += tag_replacement;
+                          }
+                          tag_buffer = '';
                         }
 
-                        tag_buffer = '';
                         break;
 
                     case '"':
