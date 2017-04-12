@@ -56,7 +56,6 @@
         let depth         = context.depth;
         let in_quote_char = context.in_quote_char;
         let output        = '';
-        let styleTag = '';
 
         for (let idx = 0, length = html.length; idx < length; idx++) {
             let char = html[idx];
