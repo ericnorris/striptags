@@ -5,6 +5,7 @@
     const STATE_PLAINTEXT = Symbol('plaintext');
     const STATE_HTML      = Symbol('html');
     const STATE_COMMENT   = Symbol('comment');
+    const STATE_STYLE     = Symbol('style');
 
     const ALLOWED_TAGS_REGEX  = /<(\w*)>/g;
     const NORMALIZE_TAG_REGEX = /<\/?([^\s\/>]+)/;
@@ -72,6 +73,12 @@
                 }
             }
 
+            else if (state === STATE_STYLE) {
+              if(char === '<'){
+                state = STATE_HTML
+              }
+            }
+
             else if (state === STATE_HTML) {
                 switch (char) {
                     case '<':
@@ -99,16 +106,21 @@
 
                         // this is closing the tag in tag_buffer
                         in_quote_char = '';
-                        state         = STATE_PLAINTEXT;
                         tag_buffer   += '>';
 
-                        if (allowable_tags.has(normalize_tag(tag_buffer))) {
-                            output += tag_buffer;
-                        } else {
-                            output += tag_replacement;
+
+                        if(tag_buffer === "<style>"){
+                          state = STATE_STYLE;
+                        }else{
+                          state = STATE_PLAINTEXT;
+                          if (allowable_tags.has(normalize_tag(tag_buffer))) {
+                              output += tag_buffer;
+                          } else {
+                              output += tag_replacement;
+                          }
+                          tag_buffer = '';
                         }
 
-                        tag_buffer = '';
                         break;
 
                     case '"':

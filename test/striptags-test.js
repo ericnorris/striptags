@@ -50,6 +50,13 @@ describe('striptags', function() {
             assert.equal(striptags(text), text);
         });
 
+        it('should remove everything included in styles', function() {
+            let html = 'lorem ipsum <style> p.paragraph { margin: 0; } </style> other things',
+                text = 'lorem ipsum  other things';
+
+            assert.equal(striptags(html), text);
+        });
+
         it('should remove simple HTML tags', function() {
             let html = '<a href="">lorem <strong>ipsum</strong></a>',
                 text = 'lorem ipsum';
