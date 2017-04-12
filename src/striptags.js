@@ -74,7 +74,6 @@
             }
 
             else if (state === STATE_STYLE) {
-              console.log(char)
               if(char === '<'){
                 state = STATE_HTML
               }
