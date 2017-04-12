@@ -5,7 +5,7 @@
     const STATE_PLAINTEXT = Symbol('plaintext');
     const STATE_HTML      = Symbol('html');
     const STATE_COMMENT   = Symbol('comment');
-    const STATE_STYLE   = Symbol('style');
+    const STATE_STYLE     = Symbol('style');
 
     const ALLOWED_TAGS_REGEX  = /<(\w*)>/g;
     const NORMALIZE_TAG_REGEX = /<\/?([^\s\/>]+)/;
@@ -45,10 +45,6 @@
             depth         : 0,
             in_quote_char : ''
         };
-    }
-
-    function checkForStyles(){
-
     }
 
     function striptags_internal(html, context) {
