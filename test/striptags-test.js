@@ -119,6 +119,15 @@ describe('striptags', function() {
 
             assert.equal(striptags(html, allowed_tags), text);
         });
+
+        it('should remove blacklisted tags', function() {
+            let html = '<p>a <i>text</i> with <a href="#">link</a></p>',
+                text = 'a <i>text</i> with <a href="#">link</a>',
+                tags = ['!p'];
+
+            assert.equal(striptags(html, tags), text);
+        });
+
     });
 
     describe('with tag_replacement parameter', function() {
