@@ -33,11 +33,11 @@
     striptags.init_streaming_mode = init_striptags_stream;
 
     function init_context(given_tags, tag_replacement) {
-        const {allowable_tags, forbidden_tags} = parse_given_tags(given_tags);
+        const parsed_tags = parse_given_tags(given_tags);
 
         return {
-            allowable_tags,
-            forbidden_tags,
+            allowable_tags: parsed_tags.allowable_tags,
+            forbidden_tags: parsed_tags.forbidden_tags,
             tag_replacement,
 
             state         : STATE_PLAINTEXT,
