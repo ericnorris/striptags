@@ -32,11 +32,12 @@
 
     striptags.init_streaming_mode = init_striptags_stream;
 
-    function init_context(allowable_tags, tag_replacement) {
-        allowable_tags = parse_allowable_tags(allowable_tags);
+    function init_context(given_tags, tag_replacement) {
+        const parsed_tags = parse_given_tags(given_tags);
 
         return {
-            allowable_tags,
+            allowable_tags: parsed_tags.allowable_tags,
+            forbidden_tags: parsed_tags.forbidden_tags,
             tag_replacement,
 
             state         : STATE_PLAINTEXT,
@@ -48,13 +49,15 @@
 
     function striptags_internal(html, context) {
         let allowable_tags  = context.allowable_tags;
+        let forbidden_tags  = context.forbidden_tags;
         let tag_replacement = context.tag_replacement;
 
-        let state         = context.state;
-        let tag_buffer    = context.tag_buffer;
-        let depth         = context.depth;
-        let in_quote_char = context.in_quote_char;
-        let output        = '';
+        let state          = context.state;
+        let tag_buffer     = context.tag_buffer;
+        let depth          = context.depth;
+        let in_quote_char  = context.in_quote_char;
+        let output         = '';
+        let normalized_tag = '';
 
         for (let idx = 0, length = html.length; idx < length; idx++) {
             let char = html[idx];
@@ -102,7 +105,11 @@
                         state         = STATE_PLAINTEXT;
                         tag_buffer   += '>';
 
-                        if (allowable_tags.has(normalize_tag(tag_buffer))) {
+                        normalized_tag = normalize_tag(tag_buffer);
+
+                        if (allowable_tags.has(normalized_tag) ||
+                            (forbidden_tags.size > 0 && !forbidden_tags.has(normalized_tag))) {
+
                             output += tag_buffer;
                         } else {
                             output += tag_replacement;
@@ -154,7 +161,7 @@
             else if (state === STATE_COMMENT) {
                 switch (char) {
                     case '>':
-                        if (tag_buffer.slice(-2) == '--') {
+                        if (tag_buffer.slice(-2) === '--') {
                             // close the comment
                             state = STATE_PLAINTEXT;
                         }
@@ -178,22 +185,32 @@
         return output;
     }
 
-    function parse_allowable_tags(allowable_tags) {
-        let tags_array = [];
+    function parse_given_tags(given_tags) {
+        let allowable_tags_array = [],
+            forbidden_tags_array = [];
 
-        if (typeof allowable_tags === 'string') {
+        if (typeof given_tags === 'string') {
             let match;
 
-            while ((match = ALLOWED_TAGS_REGEX.exec(allowable_tags)) !== null) {
-                tags_array.push(match[1]);
+            while ((match = ALLOWED_TAGS_REGEX.exec(given_tags)) !== null) {
+                allowable_tags_array.push(match[1]);
             }
         }
 
-        else if (typeof allowable_tags[Symbol.iterator] === 'function') {
-            tags_array = allowable_tags;
+        else if (typeof given_tags[Symbol.iterator] === 'function') {
+            given_tags.forEach(function(tag) {
+                if (tag.indexOf('!') === 0) {
+                    forbidden_tags_array.push(tag.substring(1));
+                } else {
+                    allowable_tags_array.push(tag);
+                }
+            });
         }
 
-        return new Set(tags_array);
+        return {
+            allowable_tags: new Set(allowable_tags_array),
+            forbidden_tags: new Set(forbidden_tags_array),
+        };
     }
 
     function normalize_tag(tag_buffer) {
