@@ -2,6 +2,7 @@
 
 (function (global) {
 
+    const Symbol = require('es6-symbol');
     const STATE_PLAINTEXT = Symbol('plaintext');
     const STATE_HTML      = Symbol('html');
     const STATE_COMMENT   = Symbol('comment');

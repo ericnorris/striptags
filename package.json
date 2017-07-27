@@ -12,6 +12,7 @@
   "bugs": "https://github.com/ericnorris/striptags/issues",
   "version": "3.0.1",
   "devDependencies": {
+    "es6-symbol": "^3.1.1",
     "istanbul": "^0.4.5",
     "mocha": "^3.2.0"
   },
