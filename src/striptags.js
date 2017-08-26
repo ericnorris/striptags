@@ -2,6 +2,15 @@
 
 (function (global) {
 
+    // minimal symbol polyfill for IE11 and others
+    if (typeof Symbol !== 'function') {
+        var Symbol = function(name) {
+            return name;
+        }
+
+        Symbol.nonNative = true;
+    }
+
     const STATE_PLAINTEXT = Symbol('plaintext');
     const STATE_HTML      = Symbol('html');
     const STATE_COMMENT   = Symbol('comment');
@@ -36,8 +45,8 @@
         allowable_tags = parse_allowable_tags(allowable_tags);
 
         return {
-            allowable_tags,
-            tag_replacement,
+            allowable_tags : allowable_tags,
+            tag_replacement: tag_replacement,
 
             state         : STATE_PLAINTEXT,
             tag_buffer    : '',
@@ -179,21 +188,28 @@
     }
 
     function parse_allowable_tags(allowable_tags) {
-        let tags_array = [];
+        let tag_set = new Set();
 
         if (typeof allowable_tags === 'string') {
             let match;
 
-            while ((match = ALLOWED_TAGS_REGEX.exec(allowable_tags)) !== null) {
-                tags_array.push(match[1]);
+            while ((match = ALLOWED_TAGS_REGEX.exec(allowable_tags))) {
+                tag_set.add(match[1]);
             }
         }
 
-        else if (typeof allowable_tags[Symbol.iterator] === 'function') {
-            tags_array = allowable_tags;
+        else if (!Symbol.nonNative &&
+                 typeof allowable_tags[Symbol.iterator] === 'function') {
+
+            tag_set = new Set(allowable_tags);
         }
 
-        return new Set(tags_array);
+        else if (typeof allowable_tags.forEach === 'function') {
+            // IE11 compatible
+            allowable_tags.forEach(tag_set.add, tag_set);
+        }
+
+        return tag_set;
     }
 
     function normalize_tag(tag_buffer) {
