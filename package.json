@@ -22,6 +22,7 @@
     "strip",
     "tags"
   ],
+  "typings": "index.d.ts",
   "scripts": {
     "test": "mocha",
     "coverage": "istanbul cover _mocha -- -R spec"
