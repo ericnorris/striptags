@@ -26,5 +26,9 @@
   "scripts": {
     "test": "mocha",
     "coverage": "istanbul cover _mocha -- -R spec"
-  }
+  },
+  "files": [
+    "src/",
+    "index.d.ts"
+  ]
 }
