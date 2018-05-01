@@ -15,7 +15,7 @@
     const STATE_HTML      = Symbol('html');
     const STATE_COMMENT   = Symbol('comment');
 
-    const ALLOWED_TAGS_REGEX  = /[(\w*)>/g;
+    const ALLOWED_TAGS_REGEX  = /[(\w*)]/g;
     const NORMALIZE_TAG_REGEX = /[\/?([^\s\/]]+)/;
 
     function striptags(html, allowable_tags, tag_replacement) {
@@ -134,7 +134,7 @@
                         break;
 
                     case '-':
-                        if (tag_buffer === '<!-') {
+                        if (tag_buffer === '[!-') {
                             state = STATE_COMMENT;
                         }
 
@@ -162,7 +162,7 @@
 
             else if (state === STATE_COMMENT) {
                 switch (char) {
-                    case '>':
+                    case ']':
                         if (tag_buffer.slice(-2) == '--') {
                             // close the comment
                             state = STATE_PLAINTEXT;
