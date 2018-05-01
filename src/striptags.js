@@ -15,8 +15,8 @@
     const STATE_HTML      = Symbol('html');
     const STATE_COMMENT   = Symbol('comment');
 
-    const ALLOWED_TAGS_REGEX  = /<(\w*)>/g;
-    const NORMALIZE_TAG_REGEX = /<\/?([^\s\/>]+)/;
+    const ALLOWED_TAGS_REGEX  = /[(\w*)>/g;
+    const NORMALIZE_TAG_REGEX = /[\/?([^\s\/]]+)/;
 
     function striptags(html, allowable_tags, tag_replacement) {
         html            = html || '';
@@ -70,7 +70,7 @@
 
             if (state === STATE_PLAINTEXT) {
                 switch (char) {
-                    case '<':
+                    case '[':
                         state       = STATE_HTML;
                         tag_buffer += char;
                         break;
@@ -83,23 +83,23 @@
 
             else if (state === STATE_HTML) {
                 switch (char) {
-                    case '<':
-                        // ignore '<' if inside a quote
+                    case '[':
+                        // ignore '[' if inside a quote
                         if (in_quote_char) {
                             break;
                         }
 
-                        // we're seeing a nested '<'
+                        // we're seeing a nested '['
                         depth++;
                         break;
 
-                    case '>':
-                        // ignore '>' if inside a quote
+                    case ']':
+                        // ignore ']' if inside a quote
                         if (in_quote_char) {
                             break;
                         }
 
-                        // something like this is happening: '<<>>'
+                        // something like this is happening: '[[]]'
                         if (depth) {
                             depth--;
 
@@ -109,7 +109,7 @@
                         // this is closing the tag in tag_buffer
                         in_quote_char = '';
                         state         = STATE_PLAINTEXT;
-                        tag_buffer   += '>';
+                        tag_buffer   += ']';
 
                         if (allowable_tags.has(normalize_tag(tag_buffer))) {
                             output += tag_buffer;
@@ -143,9 +143,9 @@
 
                     case ' ':
                     case '\n':
-                        if (tag_buffer === '<') {
+                        if (tag_buffer === '[') {
                             state      = STATE_PLAINTEXT;
-                            output    += '< ';
+                            output    += '[ ';
                             tag_buffer = '';
 
                             break;
