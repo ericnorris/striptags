@@ -15,8 +15,8 @@
     const STATE_HTML      = Symbol('html');
     const STATE_COMMENT   = Symbol('comment');
 
-    const ALLOWED_TAGS_REGEX  = /[(\w*)]/g;
-    const NORMALIZE_TAG_REGEX = /[\/?([^\s\/]]+)/;
+    const ALLOWED_TAGS_REGEX  = /\[(\w*)\]/g;
+    const NORMALIZE_TAG_REGEX = /\[\/?([^\s\/\]]+)/;
 
     function striptags(html, allowable_tags, tag_replacement) {
         html            = html || '';
