@@ -51,10 +51,11 @@ lorem ipsum <strong>dolor</strong> sit amet'
 ```
 
 ```
-
-lorem ipsum
+lorem ipsum 
 dolor
- sit amet
+ 
+sit
+ amet
 ```
 
 ## Streaming Mode
