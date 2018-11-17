@@ -230,6 +230,6 @@
 
     else {
         // Browser
-        global.striptags = striptags;
+        (global || window).striptags = striptags;
     }
 }(this));
