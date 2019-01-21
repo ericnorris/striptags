@@ -11,19 +11,19 @@
         Symbol.nonNative = true;
     }
 
-    const STATE_PLAINTEXT = Symbol('plaintext');
-    const STATE_HTML      = Symbol('html');
-    const STATE_COMMENT   = Symbol('comment');
+    var STATE_PLAINTEXT = Symbol('plaintext');
+    var STATE_HTML      = Symbol('html');
+    var STATE_COMMENT   = Symbol('comment');
 
-    const ALLOWED_TAGS_REGEX  = /<(\w*)>/g;
-    const NORMALIZE_TAG_REGEX = /<\/?([^\s\/>]+)/;
+    var ALLOWED_TAGS_REGEX  = /<(\w*)>/g;
+    var NORMALIZE_TAG_REGEX = /<\/?([^\s\/>]+)/;
 
     function striptags(html, allowable_tags, tag_replacement) {
         html            = html || '';
         allowable_tags  = allowable_tags || [];
         tag_replacement = tag_replacement || '';
 
-        let context = init_context(allowable_tags, tag_replacement);
+        var context = init_context(allowable_tags, tag_replacement);
 
         return striptags_internal(html, context);
     }
@@ -32,7 +32,7 @@
         allowable_tags  = allowable_tags || [];
         tag_replacement = tag_replacement || '';
 
-        let context = init_context(allowable_tags, tag_replacement);
+        var context = init_context(allowable_tags, tag_replacement);
 
         return function striptags_stream(html) {
             return striptags_internal(html || '', context);
@@ -56,17 +56,17 @@
     }
 
     function striptags_internal(html, context) {
-        let allowable_tags  = context.allowable_tags;
-        let tag_replacement = context.tag_replacement;
+        var allowable_tags  = context.allowable_tags;
+        var tag_replacement = context.tag_replacement;
 
-        let state         = context.state;
-        let tag_buffer    = context.tag_buffer;
-        let depth         = context.depth;
-        let in_quote_char = context.in_quote_char;
-        let output        = '';
+        var state         = context.state;
+        var tag_buffer    = context.tag_buffer;
+        var depth         = context.depth;
+        var in_quote_char = context.in_quote_char;
+        var output        = '';
 
-        for (let idx = 0, length = html.length; idx < length; idx++) {
-            let char = html[idx];
+        for (var idx = 0, length = html.length; idx < length; idx++) {
+            var char = html[idx];
 
             if (state === STATE_PLAINTEXT) {
                 switch (char) {
@@ -188,10 +188,10 @@
     }
 
     function parse_allowable_tags(allowable_tags) {
-        let tag_set = new Set();
+        var tag_set = new Set();
 
         if (typeof allowable_tags === 'string') {
-            let match;
+            var match;
 
             while ((match = ALLOWED_TAGS_REGEX.exec(allowable_tags))) {
                 tag_set.add(match[1]);
@@ -213,7 +213,7 @@
     }
 
     function normalize_tag(tag_buffer) {
-        let match = NORMALIZE_TAG_REGEX.exec(tag_buffer);
+        var match = NORMALIZE_TAG_REGEX.exec(tag_buffer);
 
         return match ? match[1].toLowerCase() : null;
     }
