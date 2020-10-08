@@ -12,6 +12,7 @@
   "bugs": "https://github.com/ericnorris/striptags/issues",
   "version": "3.1.1",
   "devDependencies": {
+    "eslint": "^7.10.0",
     "istanbul": "^0.4.5",
     "mocha": "^3.2.0"
   },
@@ -24,6 +25,7 @@
   ],
   "typings": "index.d.ts",
   "scripts": {
+    "lint": "eslint .",
     "test": "mocha",
     "coverage": "istanbul cover _mocha -- -R spec"
   }
