@@ -23,7 +23,7 @@
         allowable_tags  = allowable_tags || [];
         tag_replacement = tag_replacement || '';
 
-        let context = init_context(allowable_tags, tag_replacement);
+        const context = init_context(allowable_tags, tag_replacement);
 
         return striptags_internal(html, context);
     }
@@ -32,7 +32,7 @@
         allowable_tags  = allowable_tags || [];
         tag_replacement = tag_replacement || '';
 
-        let context = init_context(allowable_tags, tag_replacement);
+        const context = init_context(allowable_tags, tag_replacement);
 
         return function striptags_stream(html) {
             return striptags_internal(html || '', context);
@@ -56,8 +56,8 @@
     }
 
     function striptags_internal(html, context) {
-        let allowable_tags  = context.allowable_tags;
-        let tag_replacement = context.tag_replacement;
+        const allowable_tags  = context.allowable_tags;
+        const tag_replacement = context.tag_replacement;
 
         let state         = context.state;
         let tag_buffer    = context.tag_buffer;
@@ -66,7 +66,7 @@
         let output        = '';
 
         for (let idx = 0, length = html.length; idx < length; idx++) {
-            let char = html[idx];
+            const char = html[idx];
 
             if (state === STATE_PLAINTEXT) {
                 switch (char) {
@@ -213,7 +213,7 @@
     }
 
     function normalize_tag(tag_buffer) {
-        let match = NORMALIZE_TAG_REGEX.exec(tag_buffer);
+        const match = NORMALIZE_TAG_REGEX.exec(tag_buffer);
 
         return match ? match[1].toLowerCase() : null;
     }
