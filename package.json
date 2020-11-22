@@ -16,5 +16,8 @@
     "html",
     "strip",
     "tags"
-  ]
+  ],
+  "devDependencies": {
+    "typescript": "^4.0.5"
+  }
 }
