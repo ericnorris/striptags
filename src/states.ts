@@ -22,7 +22,7 @@ export interface StateMachineOptions {
     readonly encodePlaintextTagDelimiters: boolean;
 }
 
-type StateTransitionFunction = (next: State) => void;
+export type StateTransitionFunction = (next: State) => void;
 
 export interface State {
     consume(character: string, transition: StateTransitionFunction): string;

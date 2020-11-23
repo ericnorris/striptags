@@ -1,32 +1,39 @@
-import { StateMachineOptions, State, InPlaintextState } from "./states";
+import { StateMachineOptions, State, StateTransitionFunction, InPlaintextState } from "./states";
+
+export const DefaultStateMachineOptions: StateMachineOptions = {
+    allowedTags: new Set<string>(),
+    tagReplacementText: "",
+    encodePlaintextTagDelimiters: true,
+};
 
 export class StateMachine {
 
     private state: State;
 
-    constructor(partialOptions: Partial<StateMachineOptions>) {
-        const options = {
-            allowedTags: new Set<string>(),
-            tagReplacementText:  "",
-            encodePlaintextTagDelimiters: true,
-        };
+    private transitionFunction: StateTransitionFunction;
 
-        Object.assign(options, partialOptions);
+    constructor(partialOptions: Partial<StateMachineOptions>= {}) {
+        this.state = new InPlaintextState({...DefaultStateMachineOptions, ...partialOptions});
 
-        this.state = new InPlaintextState(options);
+        this.transitionFunction = ((next: State): void => {
+            this.state = next;
+        }).bind(this);
     }
 
     public consume(text: string): string {
         let outputBuffer = "";
 
         for (const character of text) {
-            outputBuffer += this.state.consume(character, this.transitionState);
+            outputBuffer += this.state.consume(character, this.transitionFunction);
         }
 
         return outputBuffer;
     }
 
-    private transitionState(next: State): void {
-        this.state = next;
-    }
 }
+
+export function striptags(text: string, options: Partial<StateMachineOptions> = {}): string {
+    return (new StateMachine(options)).consume(text);
+}
+
+export default striptags;
