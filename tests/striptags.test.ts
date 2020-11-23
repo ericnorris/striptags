@@ -18,13 +18,13 @@ describe("StateMachine", () => {
 
 describe("striptags", () => {
     it("sanity check", () => {
-        const want = "a string </atag some attr>  some text"
+        const want = "a string </atag some attr>  some text";
 
         const got = striptags("a string </atag some attr> <anothertag> some text", {allowedTags: new Set(["atag"])});
 
         expect(got).toEqual(want);
     });
-})
+});
 
 describe("default export", () => {
     it("sanity check", () => {

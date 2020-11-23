@@ -4,10 +4,10 @@ function isSpace(character: string): character is SpaceCharacter  {
     return character == " " || character == "\n" || character == "\r" || character == "\t";
 }
 
-type QuoteCharacter = '"'|"'";
+type QuoteCharacter = "\""|"'";
 
 function isQuote(character: string): character is QuoteCharacter {
-    return character == '"' || character == "'";
+    return character == "\"" || character == "'";
 }
 
 const TAG_START = "<";
