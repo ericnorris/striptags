@@ -126,7 +126,7 @@ export class InTagState<T extends TagMode> implements State {
         if (character == TAG_END) {
             transition(new InPlaintextState(this.options));
         } else if (isQuote(character)) {
-            transition(new InQuotedStringInTagState<T>(this.mode, character, this.options));
+            transition(new InQuotedStringInTagState(this.mode, character, this.options));
         }
 
         if (this.mode == TagMode.Disallowed) {
@@ -150,7 +150,7 @@ export class InQuotedStringInTagState<T extends TagMode> implements State {
 
     consume(character: string, transition: InQuotedStringInTagStateTransitionFunction<T>): string {
         if (character == this.quoteCharacter) {
-            transition(new InTagState<T>(this.mode, this.options));
+            transition(new InTagState(this.mode, this.options));
         }
 
         if (this.mode == TagMode.Disallowed) {
