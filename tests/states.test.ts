@@ -1,4 +1,13 @@
-import { StateMachineOptions, State, TagMode, InPlaintextState, InTagNameState, InTagState, InCommentState, InQuotedStringInTagState } from "../src/states";
+import {
+    StateMachineOptions,
+    State,
+    TagMode,
+    InPlaintextState,
+    InTagNameState,
+    InTagState,
+    InCommentState,
+    InQuotedStringInTagState,
+} from "../src/states";
 
 const AllowedTagName = "allowed";
 const TagReplacementText = "~replaced~";
@@ -8,16 +17,24 @@ const DefaultOptions = {
     tagReplacementText: TagReplacementText,
 };
 
-const OptionsWithEncodingEnabled: StateMachineOptions = {...DefaultOptions, encodePlaintextTagDelimiters: true};
+const OptionsWithEncodingEnabled: StateMachineOptions = {
+    ...DefaultOptions,
+    encodePlaintextTagDelimiters: true,
+};
 
-const OptionsWithEncodingDisabled: StateMachineOptions = {...DefaultOptions, encodePlaintextTagDelimiters: false};
+const OptionsWithEncodingDisabled: StateMachineOptions = {
+    ...DefaultOptions,
+    encodePlaintextTagDelimiters: false,
+};
 
 function consumeStringUntilTransitionOrEOF(start: State, text: string): [string, State] {
     let currentState = start;
     let outputBuffer = "";
 
     for (const character of text) {
-        outputBuffer += start.consume(character, (next: State) => {currentState = next;});
+        outputBuffer += start.consume(character, (next: State) => {
+            currentState = next;
+        });
 
         if (currentState != start) {
             break;
@@ -64,7 +81,6 @@ describe("InPlaintextState", () => {
         expect(endState).toBeInstanceOf(InPlaintextState);
     });
 });
-
 
 describe("InTagNameState", () => {
     it("should output an encoded '<' character if immediately followed by a space", () => {
@@ -179,10 +195,9 @@ describe("InTagNameState", () => {
     });
 });
 
-
 describe("InTagState", () => {
     it("should return text if allowed", () => {
-        const start = new InTagState<TagMode.Allowed>(TagMode.Allowed, OptionsWithEncodingEnabled);
+        const start = new InTagState(TagMode.Allowed, OptionsWithEncodingEnabled);
 
         const text = "tag body text";
         const want = text;
@@ -194,7 +209,7 @@ describe("InTagState", () => {
     });
 
     it("should not return text if disallowed", () => {
-        const start = new InTagState<TagMode.Disallowed>(TagMode.Disallowed, OptionsWithEncodingEnabled);
+        const start = new InTagState(TagMode.Disallowed, OptionsWithEncodingEnabled);
 
         const text = "tag body < text";
         const want = "";
@@ -206,10 +221,10 @@ describe("InTagState", () => {
     });
 
     describe("should transition to InQuotedStringInTagState upon seeing a quote character", () => {
-        it("\" character", () => {
-            const start = new InTagState<TagMode.Disallowed>(TagMode.Disallowed, OptionsWithEncodingEnabled);
+        it('" character', () => {
+            const start = new InTagState(TagMode.Disallowed, OptionsWithEncodingEnabled);
 
-            const text = "attr=\"";
+            const text = 'attr="';
             const want = "";
 
             const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
@@ -217,11 +232,11 @@ describe("InTagState", () => {
             expect(got).toEqual(want);
             expect(endState).toBeInstanceOf(InQuotedStringInTagState);
             expect(endState).toHaveProperty("mode", TagMode.Disallowed);
-            expect(endState).toHaveProperty("quoteCharacter", "\"");
+            expect(endState).toHaveProperty("quoteCharacter", '"');
         });
 
         it("' character", () => {
-            const start = new InTagState<TagMode.Allowed>(TagMode.Allowed, OptionsWithEncodingEnabled);
+            const start = new InTagState(TagMode.Allowed, OptionsWithEncodingEnabled);
 
             const text = "attr='";
             const want = "attr='";
@@ -236,7 +251,7 @@ describe("InTagState", () => {
     });
 
     it("should encode spurious '<' characters", () => {
-        const start = new InTagState<TagMode.Allowed>(TagMode.Allowed, OptionsWithEncodingEnabled);
+        const start = new InTagState(TagMode.Allowed, OptionsWithEncodingEnabled);
 
         const text = "tag body < text";
         const want = "tag body &lt; text";
@@ -248,7 +263,7 @@ describe("InTagState", () => {
     });
 
     it("should transition to InPlaintextState upon seeing a '>' character", () => {
-        const start = new InTagState<TagMode.Allowed>(TagMode.Allowed, OptionsWithEncodingEnabled);
+        const start = new InTagState(TagMode.Allowed, OptionsWithEncodingEnabled);
 
         const text = "tag body> text";
         const want = "tag body>";
@@ -262,10 +277,14 @@ describe("InTagState", () => {
 
 describe("InQuotedStringInTagState", () => {
     it("should return text if allowed", () => {
-        const start = new InQuotedStringInTagState<TagMode.Allowed>(TagMode.Allowed, "'", OptionsWithEncodingEnabled);
+        const start = new InQuotedStringInTagState(
+            TagMode.Allowed,
+            "'",
+            OptionsWithEncodingEnabled,
+        );
 
-        const text = "attr body \" text < >";
-        const want = "attr body \" text &lt; &gt;";
+        const text = 'attr body " text < >';
+        const want = 'attr body " text &lt; &gt;';
 
         const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
 
@@ -274,7 +293,11 @@ describe("InQuotedStringInTagState", () => {
     });
 
     it("should not return text if disallowed", () => {
-        const start = new InQuotedStringInTagState<TagMode.Disallowed>(TagMode.Disallowed, "'", OptionsWithEncodingEnabled);
+        const start = new InQuotedStringInTagState(
+            TagMode.Disallowed,
+            "'",
+            OptionsWithEncodingEnabled,
+        );
 
         const text = "attr body text < >";
         const want = "";
@@ -286,11 +309,15 @@ describe("InQuotedStringInTagState", () => {
     });
 
     describe("should transition back to InTagState upon seeing a closing quote character", () => {
-        it("\" character", () => {
-            const start = new InQuotedStringInTagState<TagMode.Allowed>(TagMode.Allowed, "\"", OptionsWithEncodingEnabled);
+        it('" character', () => {
+            const start = new InQuotedStringInTagState(
+                TagMode.Allowed,
+                '"',
+                OptionsWithEncodingEnabled,
+            );
 
-            const text = "attr body text\" ";
-            const want = "attr body text\"";
+            const text = 'attr body text" ';
+            const want = 'attr body text"';
 
             const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
 
@@ -300,7 +327,11 @@ describe("InQuotedStringInTagState", () => {
         });
 
         it("' character", () => {
-            const start = new InQuotedStringInTagState<TagMode.Disallowed>(TagMode.Disallowed, "'", OptionsWithEncodingEnabled);
+            const start = new InQuotedStringInTagState(
+                TagMode.Disallowed,
+                "'",
+                OptionsWithEncodingEnabled,
+            );
 
             const text = "attr body text' ";
             const want = "";

@@ -7,13 +7,15 @@ export const DefaultStateMachineOptions: StateMachineOptions = {
 };
 
 export class StateMachine {
-
     private state: State;
 
     private transitionFunction: StateTransitionFunction;
 
-    constructor(partialOptions: Partial<StateMachineOptions>= {}) {
-        this.state = new InPlaintextState({...DefaultStateMachineOptions, ...partialOptions});
+    constructor(partialOptions: Partial<StateMachineOptions> = {}) {
+        this.state = new InPlaintextState({
+            ...DefaultStateMachineOptions,
+            ...partialOptions,
+        });
 
         this.transitionFunction = ((next: State): void => {
             this.state = next;
@@ -29,11 +31,10 @@ export class StateMachine {
 
         return outputBuffer;
     }
-
 }
 
 export function striptags(text: string, options: Partial<StateMachineOptions> = {}): string {
-    return (new StateMachine(options)).consume(text);
+    return new StateMachine(options).consume(text);
 }
 
 export default striptags;

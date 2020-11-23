@@ -1,13 +1,13 @@
-type SpaceCharacter = " "|"\n"|"\r"|"\t";
+type SpaceCharacter = " " | "\n" | "\r" | "\t";
 
-function isSpace(character: string): character is SpaceCharacter  {
+function isSpace(character: string): character is SpaceCharacter {
     return character == " " || character == "\n" || character == "\r" || character == "\t";
 }
 
-type QuoteCharacter = "\""|"'";
+type QuoteCharacter = '"' | "'";
 
 function isQuote(character: string): character is QuoteCharacter {
-    return character == "\"" || character == "'";
+    return character == '"' || character == "'";
 }
 
 const TAG_START = "<";
@@ -31,7 +31,6 @@ export interface State {
 type InPlaintextStateTransitionFunction = (next: InTagNameState) => void;
 
 export class InPlaintextState implements State {
-
     constructor(private readonly options: StateMachineOptions) {}
 
     consume(character: string, transition: InPlaintextStateTransitionFunction): string {
@@ -45,7 +44,6 @@ export class InPlaintextState implements State {
 
         return character;
     }
-
 }
 
 export const enum TagMode {
@@ -53,10 +51,15 @@ export const enum TagMode {
     Disallowed,
 }
 
-type InTagNameStateTransitionFunction = (next: InPlaintextState|InTagState<TagMode.Allowed>|InTagState<TagMode.Disallowed>|InCommentState) => void;
+type InTagNameStateTransitionFunction = (
+    next:
+        | InPlaintextState
+        | InTagState<TagMode.Allowed>
+        | InTagState<TagMode.Disallowed>
+        | InCommentState,
+) => void;
 
 export class InTagNameState implements State {
-
     private nameBuffer = "";
     private isClosingTag = false;
 
@@ -67,7 +70,10 @@ export class InTagNameState implements State {
             if (isSpace(character)) {
                 transition(new InPlaintextState(this.options));
 
-                return (this.options.encodePlaintextTagDelimiters ? ENCODED_TAG_START : "<") + character;
+                return (
+                    (this.options.encodePlaintextTagDelimiters ? ENCODED_TAG_START : "<") +
+                    character
+                );
             }
 
             if (character == "/") {
@@ -113,13 +119,13 @@ export class InTagNameState implements State {
 
         return "";
     }
-
 }
 
-type InTagStateTransitionFunction<T extends TagMode> = (next: InPlaintextState|InQuotedStringInTagState<T>) => void;
+type InTagStateTransitionFunction<T extends TagMode> = (
+    next: InPlaintextState | InQuotedStringInTagState<T>,
+) => void;
 
 export class InTagState<T extends TagMode> implements State {
-
     constructor(public readonly mode: T, private readonly options: StateMachineOptions) {}
 
     consume(character: string, transition: InTagStateTransitionFunction<T>): string {
@@ -139,14 +145,16 @@ export class InTagState<T extends TagMode> implements State {
             return character;
         }
     }
-
 }
 
 type InQuotedStringInTagStateTransitionFunction<T extends TagMode> = (next: InTagState<T>) => void;
 
 export class InQuotedStringInTagState<T extends TagMode> implements State {
-
-    constructor(public readonly mode: T, public readonly quoteCharacter: QuoteCharacter, private readonly options: StateMachineOptions) {}
+    constructor(
+        public readonly mode: T,
+        public readonly quoteCharacter: QuoteCharacter,
+        private readonly options: StateMachineOptions,
+    ) {}
 
     consume(character: string, transition: InQuotedStringInTagStateTransitionFunction<T>): string {
         if (character == this.quoteCharacter) {
@@ -165,13 +173,11 @@ export class InQuotedStringInTagState<T extends TagMode> implements State {
             return character;
         }
     }
-
 }
 
 type InCommentStateTransitionFunction = (next: InPlaintextState) => void;
 
 export class InCommentState implements State {
-
     private consecutiveHyphens = 0;
 
     constructor(private readonly options: StateMachineOptions) {}
@@ -187,5 +193,4 @@ export class InCommentState implements State {
 
         return "";
     }
-
 }

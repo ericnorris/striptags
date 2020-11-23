@@ -3,7 +3,7 @@ import striptagsDefault from "../src/striptags";
 
 describe("StateMachine", () => {
     it("sanity check", () => {
-        const machine = new StateMachine({allowedTags: new Set(["atag"])});
+        const machine = new StateMachine({ allowedTags: new Set(["atag"]) });
 
         const want = "a string </atag some attr>  some text";
 
@@ -20,7 +20,9 @@ describe("striptags", () => {
     it("sanity check", () => {
         const want = "a string </atag some attr>  some text";
 
-        const got = striptags("a string </atag some attr> <anothertag> some text", {allowedTags: new Set(["atag"])});
+        const got = striptags("a string </atag some attr> <anothertag> some text", {
+            allowedTags: new Set(["atag"]),
+        });
 
         expect(got).toEqual(want);
     });
