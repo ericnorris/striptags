@@ -1,5 +1,4 @@
 import { StateMachine, striptags } from "../src/striptags";
-import striptagsDefault from "../src/striptags";
 
 describe("StateMachine", () => {
     it("sanity check", () => {
@@ -25,11 +24,5 @@ describe("striptags", () => {
         });
 
         expect(got).toEqual(want);
-    });
-});
-
-describe("default export", () => {
-    it("sanity check", () => {
-        expect(striptagsDefault).toEqual(striptags);
     });
 });

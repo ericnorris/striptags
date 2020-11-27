@@ -3,10 +3,9 @@
         "target": "ES2015",
         "module": "ES2015",
 
-        "rootDirs": ["src", "tests"],
-        "outDir": "dist",
-
         "strict": true,
+
+        "rootDir": "src/",
 
         "noUnusedLocals": true,
         "noUnusedParameters": true,
@@ -18,5 +17,8 @@
 
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
-    }
+    },
+    "include": [
+        "src/*"
+    ]
 }
