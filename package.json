@@ -17,9 +17,9 @@
         "strip",
         "tags"
     ],
-    "main": "bundle/striptags.js",
-    "module": "lib/striptags.js",
-    "types": "lib/striptags.d.ts",
+    "main": "dist/cjs/striptags.js",
+    "module": "dist/es6/striptags.js",
+    "types": "dist/es6/striptags.d.ts",
     "devDependencies": {
         "@rollup/plugin-typescript": "^6.1.0",
         "@types/jest": "^26.0.15",

@@ -6,17 +6,19 @@ export default [
         output: [
             {
                 format: "es",
-                dir: "lib/",
+                dir: "dist/es6",
             },
         ],
-        plugins: [typescript({ declaration: true, declarationDir: "lib", outDir: "lib" })],
+        plugins: [
+            typescript({ declaration: true, declarationDir: "dist/es6", outDir: "dist/es6" }),
+        ],
     },
     {
         input: "src/striptags.ts",
         output: [
             {
                 format: "cjs",
-                file: "bundle/striptags.js",
+                dir: "dist/cjs",
             },
         ],
         plugins: [typescript()],
