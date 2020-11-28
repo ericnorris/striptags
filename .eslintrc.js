@@ -10,10 +10,11 @@ module.exports = {
         ecmaVersion: 12,
         sourceType: "module",
     },
-    plugins: ["@typescript-eslint"],
+    plugins: ["@typescript-eslint", "prettier"],
     rules: {
         indent: ["error", 4],
         "linebreak-style": ["error", "unix"],
+        "prettier/prettier": "error",
         quotes: ["error", "double", { avoidEscape: true }],
         semi: ["error", "always"],
     },

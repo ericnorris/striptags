@@ -26,6 +26,7 @@
         "@typescript-eslint/eslint-plugin": "^4.8.1",
         "@typescript-eslint/parser": "^4.8.1",
         "eslint": "^7.14.0",
+        "eslint-plugin-prettier": "^3.1.4",
         "jest": "^26.6.1",
         "prettier": "^2.2.0",
         "rollup": "^2.33.3",
@@ -35,6 +36,6 @@
     },
     "scripts": {
         "test": "jest",
-        "lint": "eslint . && prettier -c ."
+        "lint": "eslint ."
     }
 }
