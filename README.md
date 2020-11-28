@@ -1,6 +1,8 @@
-# striptags (WIP)
+# striptags
 
 An implementation of PHP's [strip_tags](https://www.php.net/manual/en/function.strip-tags.php) in Typescript.
+
+**Note:** this is a total rewrite from [v3](https://github.com/ericnorris/striptags/tree/v3.x.x), and as such, is currently in an alpha state. Feel free to use this during the alpha period and provide feedback before it is released as v4.
 
 ## Highlights
 
@@ -10,23 +12,22 @@ An implementation of PHP's [strip_tags](https://www.php.net/manual/en/function.s
 ## Installing
 
 ```
-npm install striptags
+npm install striptags@alpha
 ```
 
 ## Basic Usage
 
 ```typescript
-// commonjs format
 striptags(text: string, options?: Partial<StateMachineOptions>): string;
 ```
 
 ### Examples
 
 ```javascript
-// commonjs format
+// commonjs
 const striptags = require("striptags").striptags;
 
-// alternatively:
+// alternatively, as an es6 import
 // import { striptags } from "striptags";
 
 var html = `
@@ -34,8 +35,8 @@ var html = `
 `.trim();
 
 console.log(striptags(html));
-console.log(striptags(html, {allowedTags: new Set(["strong"])}));
-console.log(striptags(html, {tagReplacementText: "🍩"}));
+console.log(striptags(html, { allowedTags: new Set(["strong"]) }));
+console.log(striptags(html, { tagReplacementText: "🍩" }));
 ```
 
 Outputs:
@@ -58,16 +59,15 @@ class StateMachine {
 The `StateMachine` class is similar to the `striptags` function, but persists state across calls to `consume()` so that you may safely pass in a stream of text. For example:
 
 ```javascript
+// commonjs
 const StateMachine = require("striptags").StateMachine;
 
-// alternatively:
+// alternatively, as an es6 import
 // import { StateMachine } from "striptags";
 
 const instance = new StateMachine();
 
-console.log(
-  instance.consume("some text with <a") + instance.consume("tag>and more text")
-);
+console.log(instance.consume("some text with <a") + instance.consume("tag>and more text"));
 ```
 
 Outputs:
@@ -76,8 +76,8 @@ Outputs:
 some text with and more text
 ```
 
-## Options
+## `Partial<StateMachineOptions>`
 
-* `allowedTags: Set<string>` a set containing a list of tag names to allow (e.g. `new Set(["tagname"])`), default: `new Set([])`.
-* `tagReplacementText: string` a string to use as replacement text when a tag is found and not allowed, default: `""`.
-* `encodePlaintextTagDelimiters: boolean` true if `<` and `>` characters immediately followed by whitespace should be HTML encoded, default: `true`. This is safe to set to `false` if the output is expected to be used only as plaintext.
+* `allowedTags?: Set<string>` a set containing a list of tag names to allow (e.g. `new Set(["tagname"])`), default: `new Set([])`.
+* `tagReplacementText?: string` a string to use as replacement text when a tag is found and not allowed, default: `""`.
+* `encodePlaintextTagDelimiters?: boolean` true if `<` and `>` characters immediately followed by whitespace should be HTML encoded, default: `true`. This is safe to set to `false` if the output is expected to be used only as plaintext.
