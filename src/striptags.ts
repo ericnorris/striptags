@@ -1,7 +1,8 @@
 import { StateMachineOptions, State, StateTransitionFunction, InPlaintextState } from "./states";
 
+export { StateMachineOptions } from "./states";
+
 export const DefaultStateMachineOptions: StateMachineOptions = {
-    allowedTags: new Set<string>(),
     tagReplacementText: "",
     encodePlaintextTagDelimiters: true,
 };

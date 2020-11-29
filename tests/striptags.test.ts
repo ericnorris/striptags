@@ -1,28 +1,69 @@
-import { StateMachine, striptags } from "../src/striptags";
+import { StateMachineOptions, StateMachine, striptags } from "../src/striptags";
+
+const OptionsWithAllowedTags: Partial<StateMachineOptions> = {
+    allowedTags: new Set(["atag"]),
+    tagReplacementText: " ",
+};
+
+const OptionsWithDisallowedTags: Partial<StateMachineOptions> = {
+    disallowedTags: new Set(["atag"]),
+    tagReplacementText: " ",
+};
+
+const ExampleText = `<atag someattr="value">some text<btag>more text</btag></atag>`;
+
+const WantWhenUsingDefault = "some textmore text";
+const WantWhenUsingAllowedTags = `<atag someattr="value">some text more text </atag>`;
+const WantWhenUsingDisallowedTags = " some text<btag>more text</btag> ";
 
 describe("StateMachine", () => {
-    it("sanity check", () => {
-        const machine = new StateMachine({ allowedTags: new Set(["atag"]) });
+    it("defaults sanity check", () => {
+        const machine = new StateMachine();
 
-        const want = "a string </atag some attr>  some text";
+        const got = ExampleText.split(/(?= )/g)
+            .map((partial) => machine.consume(partial))
+            .join("");
 
-        const got =
-            machine.consume("a string </a") +
-            machine.consume("tag some attr> <a") +
-            machine.consume("nothertag> some text");
+        expect(got).toEqual(WantWhenUsingDefault);
+    });
 
-        expect(got).toEqual(want);
+    it("allowed tags sanity check", () => {
+        const machine = new StateMachine(OptionsWithAllowedTags);
+
+        const got = ExampleText.split(/(?= )/g)
+            .map((partial) => machine.consume(partial))
+            .join("");
+
+        expect(got).toEqual(WantWhenUsingAllowedTags);
+    });
+
+    it("disallowed tags sanity check", () => {
+        const machine = new StateMachine(OptionsWithDisallowedTags);
+
+        const got = ExampleText.split(/(?= )/g)
+            .map((partial) => machine.consume(partial))
+            .join("");
+
+        expect(got).toEqual(WantWhenUsingDisallowedTags);
     });
 });
 
 describe("striptags", () => {
-    it("sanity check", () => {
-        const want = "a string </atag some attr>  some text";
+    it("defaults sanity check", () => {
+        const got = striptags(ExampleText);
 
-        const got = striptags("a string </atag some attr> <anothertag> some text", {
-            allowedTags: new Set(["atag"]),
-        });
+        expect(got).toEqual(WantWhenUsingDefault);
+    });
 
-        expect(got).toEqual(want);
+    it("allowed tags sanity check", () => {
+        const got = striptags(ExampleText, OptionsWithAllowedTags);
+
+        expect(got).toEqual(WantWhenUsingAllowedTags);
+    });
+
+    it("disallowed tags sanity check", () => {
+        const got = striptags(ExampleText, OptionsWithDisallowedTags);
+
+        expect(got).toEqual(WantWhenUsingDisallowedTags);
     });
 });

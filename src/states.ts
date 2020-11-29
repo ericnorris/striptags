@@ -17,7 +17,9 @@ const ENCODED_TAG_START = "&lt;";
 const ENCODED_TAG_END = "&gt;";
 
 export interface StateMachineOptions {
-    readonly allowedTags: Set<string>;
+    readonly allowedTags?: Set<string>;
+    readonly disallowedTags?: Set<string>;
+
     readonly tagReplacementText: string;
     readonly encodePlaintextTagDelimiters: boolean;
 }
@@ -84,7 +86,7 @@ export class InTagNameState implements State {
         }
 
         if (isSpace(character)) {
-            if (this.options.allowedTags.has(this.nameBuffer.toLowerCase())) {
+            if (this.isNameBufferAnAllowedTag()) {
                 transition(new InTagState(TagMode.Allowed, this.options));
 
                 return TAG_START + (this.isClosingTag ? "/" : "") + this.nameBuffer + character;
@@ -102,7 +104,7 @@ export class InTagNameState implements State {
         if (character == TAG_END) {
             transition(new InPlaintextState(this.options));
 
-            if (this.options.allowedTags.has(this.nameBuffer.toLowerCase())) {
+            if (this.isNameBufferAnAllowedTag()) {
                 return TAG_START + (this.isClosingTag ? "/" : "") + this.nameBuffer + character;
             } else {
                 return this.options.tagReplacementText;
@@ -118,6 +120,18 @@ export class InTagNameState implements State {
         this.nameBuffer += character;
 
         return "";
+    }
+
+    private isNameBufferAnAllowedTag(): boolean {
+        const tagName = this.nameBuffer.toLowerCase();
+
+        if (this.options.allowedTags) {
+            return this.options.allowedTags.has(tagName);
+        } else if (this.options.disallowedTags) {
+            return !this.options.disallowedTags.has(tagName);
+        } else {
+            return false;
+        }
     }
 }
 
