@@ -10,21 +10,29 @@ import {
 } from "../src/states";
 
 const AllowedTagName = "allowed";
+const DisallowedTagName = "disallowed";
+const ImplicitlyAllowedTagName = "notdisallowed";
 const TagReplacementText = "~replaced~";
 
-const DefaultOptions = {
-    allowedTags: new Set<string>([AllowedTagName]),
+const DefaultTestOptions = {
+    allowedTags: new Set([AllowedTagName]),
     tagReplacementText: TagReplacementText,
 };
 
 const OptionsWithEncodingEnabled: StateMachineOptions = {
-    ...DefaultOptions,
+    ...DefaultTestOptions,
     encodePlaintextTagDelimiters: true,
 };
 
 const OptionsWithEncodingDisabled: StateMachineOptions = {
-    ...DefaultOptions,
+    ...DefaultTestOptions,
     encodePlaintextTagDelimiters: false,
+};
+
+const OptionsWithDisallowedTags: StateMachineOptions = {
+    disallowedTags: new Set([DisallowedTagName]),
+    tagReplacementText: TagReplacementText,
+    encodePlaintextTagDelimiters: true,
 };
 
 function consumeStringUntilTransitionOrEOF(start: State, text: string): [string, State] {
@@ -87,7 +95,7 @@ describe("InTagNameState", () => {
         const start = new InTagNameState(OptionsWithEncodingEnabled);
 
         const text = " ";
-        const want = "&lt;" + text;
+        const want = `&lt;${text}`;
 
         const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
 
@@ -99,7 +107,7 @@ describe("InTagNameState", () => {
         const start = new InTagNameState(OptionsWithEncodingDisabled);
 
         const text = " ";
-        const want = "<" + text;
+        const want = `<${text}`;
 
         const [got, endState] = consumeStringUntilTransitionOrEOF(start, " ");
 
@@ -110,8 +118,8 @@ describe("InTagNameState", () => {
     it("should transition to InTagState w/ allowed mode upon seeing a space", () => {
         const start = new InTagNameState(OptionsWithEncodingEnabled);
 
-        const text = AllowedTagName + " ";
-        const want = "<" + text;
+        const text = `${AllowedTagName} `;
+        const want = `<${text}`;
 
         const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
 
@@ -123,8 +131,8 @@ describe("InTagNameState", () => {
     it("should transition to InTagState w/ allowed mode upon seeing a space after a closing tag name", () => {
         const start = new InTagNameState(OptionsWithEncodingEnabled);
 
-        const text = "/" + AllowedTagName + " ";
-        const want = "<" + text;
+        const text = `/${AllowedTagName} `;
+        const want = `<${text}`;
 
         const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
 
@@ -149,8 +157,8 @@ describe("InTagNameState", () => {
     it("should allow tags with no attributes", () => {
         const start = new InTagNameState(OptionsWithEncodingEnabled);
 
-        const text = AllowedTagName + ">";
-        const want = "<" + text;
+        const text = `${AllowedTagName}>`;
+        const want = `<${text}`;
 
         const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
 
@@ -161,8 +169,8 @@ describe("InTagNameState", () => {
     it("should allow closing tags with no attributes", () => {
         const start = new InTagNameState(OptionsWithEncodingEnabled);
 
-        const text = "/" + AllowedTagName + ">";
-        const want = "<" + text;
+        const text = `/${AllowedTagName}>`;
+        const want = `<${text}`;
 
         const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
 
@@ -180,6 +188,32 @@ describe("InTagNameState", () => {
 
         expect(got).toEqual(want);
         expect(endState).toBeInstanceOf(InPlaintextState);
+    });
+
+    it("should disallow tags in a disallowedTags set", () => {
+        const start = new InTagNameState(OptionsWithDisallowedTags);
+
+        const text = `${DisallowedTagName} `;
+        const want = TagReplacementText;
+
+        const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
+
+        expect(got).toEqual(want);
+        expect(endState).toBeInstanceOf(InTagState);
+        expect(endState).toHaveProperty("mode", TagMode.Disallowed);
+    });
+
+    it("should allow tags not in a disallowedTags set", () => {
+        const start = new InTagNameState(OptionsWithDisallowedTags);
+
+        const text = `${ImplicitlyAllowedTagName} `;
+        const want = `<${text}`;
+
+        const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
+
+        expect(got).toEqual(want);
+        expect(endState).toBeInstanceOf(InTagState);
+        expect(endState).toHaveProperty("mode", TagMode.Allowed);
     });
 
     it("should transition to InCommentState for comments", () => {

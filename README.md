@@ -76,8 +76,34 @@ Outputs:
 some text with and more text
 ```
 
+## Safety
+
+`striptags` is safe to use by default; the output is guaranteed to be free of potential XSS vectors if used as text within a tag. **Specifying either `allowedTags` or `disallowedTags` in the options argument removes this guarantee**, however. For example, a malicious user may achieve XSS via an attribute in an allowed tag: `<img onload="alert(1);">`.
+
+In addition, `striptags` will automatically HTML encode `<` and `>` characters followed by whitespace. While most browsers tested treat `<` or `>` followed by whitespace as a non-tag string, it is safer to escape the characters. You may change this behavior via the `encodePlaintextTagDelimiters` option described below.
+
 ## `Partial<StateMachineOptions>`
 
-* `allowedTags?: Set<string>` a set containing a list of tag names to allow (e.g. `new Set(["tagname"])`), default: `new Set([])`.
-* `tagReplacementText?: string` a string to use as replacement text when a tag is found and not allowed, default: `""`.
-* `encodePlaintextTagDelimiters?: boolean` true if `<` and `>` characters immediately followed by whitespace should be HTML encoded, default: `true`. This is safe to set to `false` if the output is expected to be used only as plaintext.
+**`allowedTags?: Set<string>`**
+
+A set containing a list of tag names to allow (e.g. `new Set(["tagname"])`). Tags not in this list will be removed. This option takes precedence over the `disallowedTags` option.
+
+Default: `undefined`
+
+**`disallowedTags?: Set<string>`**
+
+A set containing a list of tag names to disallow ((e.g. `new Set(["tagname"])`). Tags not in this list will be allowed. Ignored if `allowedTags` is set.
+
+Default: `undefined`
+
+**`tagReplacementText?: string`**
+
+A string to use as replacement text when a tag is found and not allowed.
+
+Default: `""`
+
+**`encodePlaintextTagDelimiters?: boolean`**
+
+Setting this option to true will cause `<` and `>` characters immediately followed by whitespace to be HTML encoded. This is safe to set to `false` if the output is expected to be used only as plaintext (i.e. it will not be displayed alongside other HTML).
+
+Default: `true`
