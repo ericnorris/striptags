@@ -1,91 +1,83 @@
-# striptags [![Build Status](https://travis-ci.org/ericnorris/striptags.svg)](https://travis-ci.org/ericnorris/striptags)
-An implementation of PHP's [strip_tags](http://www.php.net/manual/en/function.strip-tags.php) in Node.js.
+# striptags
 
-**Note:** `v3+` targets ES6, and is therefore incompatible with the master branch of `uglifyjs`. You can either:
-- use `babili`, which supports ES6
-- use the `harmony` branch of `uglifyjs`
-- stick with the [2.x.x](https://github.com/ericnorris/striptags/tree/v2.x.x) branch
+An implementation of PHP's [strip_tags](https://www.php.net/manual/en/function.strip-tags.php) in Typescript.
 
-## Features
-- Fast
-- Zero dependencies
-- 100% test code coverage
-- No unsafe regular expressions
+**Note:** this is a total rewrite from [v3](https://github.com/ericnorris/striptags/tree/v3.x.x), and as such, is currently in an alpha state. Feel free to use this during the alpha period and provide feedback before it is released as v4.
+
+## Highlights
+
+- No dependencies
+- Prevents XSS by default
 
 ## Installing
+
 ```
-npm install striptags
+npm install striptags@alpha
 ```
 
 ## Basic Usage
-```javascript
-striptags(html, allowed_tags, tag_replacement);
+
+```typescript
+striptags(text: string, options?: Partial<StateMachineOptions>): string;
 ```
 
-### Example
+### Examples
+
 ```javascript
-var striptags = require('striptags');
+// commonjs
+const striptags = require("striptags").striptags;
 
-var html =
-    '<a href="https://example.com">' +
-        'lorem ipsum <strong>dolor</strong> <em>sit</em> amet' +
-    '</a>';
+// alternatively, as an es6 import
+// import { striptags } from "striptags";
 
-striptags(html);
-striptags(html, '<strong>');
-striptags(html, ['a']);
-striptags(html, [], '\n');
+var html = `
+<a href="https://example.com">lorem ipsum <strong>dolor</strong> <em>sit</em> amet</a>
+`.trim();
+
+console.log(striptags(html));
+console.log(striptags(html, { allowedTags: new Set(["strong"]) }));
+console.log(striptags(html, { tagReplacementText: "🍩" }));
 ```
 
 Outputs:
-```
-'lorem ipsum dolor sit amet'
-```
 
 ```
-lorem ipsum <strong>dolor</strong> sit amet'
+lorem ipsum dolor sit amet
+lorem ipsum <strong>dolor</strong> sit amet
+🍩lorem ipsum 🍩dolor🍩 🍩sit🍩 amet🍩
 ```
 
-```
-'<a href="https://example.com">lorem ipsum dolor sit amet</a>'
+## Advanced Usage
+
+```typescript
+class StateMachine {
+    constructor(partialOptions?: Partial<StateMachineOptions>);
+    consume(text: string): string;
+}
 ```
 
-```
-lorem ipsum 
-dolor
- 
-sit
- amet
-```
-
-## Streaming Mode
-`striptags` can also operate in streaming mode. Simply call `init_streaming_mode` to get back a function that accepts HTML and outputs stripped HTML. State is saved between calls so that partial HTML can be safely passed in.
+The `StateMachine` class is similar to the `striptags` function, but persists state across calls to `consume()` so that you may safely pass in a stream of text. For example:
 
 ```javascript
-let stream_function = striptags.init_streaming_mode(
-    allowed_tags,
-    tag_replacement
-);
+// commonjs
+const StateMachine = require("striptags").StateMachine;
 
-let partial_text = stream_function(partial_html);
-let more_text    = stream_function(more_html);
+// alternatively, as an es6 import
+// import { StateMachine } from "striptags";
+
+const instance = new StateMachine();
+
+console.log(instance.consume("some text with <a") + instance.consume("tag>and more text"));
 ```
 
-Check out [test/striptags-test.js](test/striptags-test.js) for a concrete example.
+Outputs:
 
-## Tests
-You can run tests (powered by [mocha](http://mochajs.org/)) locally via:
 ```
-npm test
+some text with and more text
 ```
 
-Generate test coverage (powered by [istanbul](https://github.com/gotwarlost/istanbul)) via :
-```
-npm run coverage
-```
+## `Partial<StateMachineOptions>`
 
-
-## Doesn't use regular expressions
-`striptags` does not use any regular expressions for stripping HTML tags.
-
-Regular expressions are not capable of preventing all possible scripting attacks (see [this](http://stackoverflow.com/a/535022)). Here is a [great StackOverflow answer](http://stackoverflow.com/a/5793453) regarding how strip_tags (**when used without specifying allowableTags**) is not vulnerable to scripting attacks.
+* `allowedTags?: Set<string>` a set containing a list of tag names to allow (e.g. `new Set(["tagname"])`), default: `new Set([])`.
+* `tagReplacementText?: string` a string to use as replacement text when a tag is found and not allowed, default: `""`.
+* `encodePlaintextTagDelimiters?: boolean` true if `<` and `>` characters immediately followed by whitespace should be HTML encoded, default: `true`. This is safe to set to `false` if the output is expected to be used only as plaintext.
