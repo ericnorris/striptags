@@ -197,7 +197,7 @@ export class InCommentState implements State {
     constructor(private readonly options: StateMachineOptions) {}
 
     consume(character: string, transition: InCommentStateTransitionFunction): string {
-        if (character == ">" && this.consecutiveHyphens == 2) {
+        if (character == ">" && this.consecutiveHyphens >= 2) {
             transition(new InPlaintextState(this.options));
         } else if (character == "-") {
             this.consecutiveHyphens++;

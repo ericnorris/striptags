@@ -395,7 +395,7 @@ describe("InCommentState", () => {
     it("should transition back to InPlaintextState upon seeing a closing comment tag", () => {
         const start = new InCommentState(OptionsWithEncodingEnabled);
 
-        const text = "some text -->";
+        const text = "some text --->";
         const want = "";
 
         const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
