@@ -99,6 +99,8 @@ export class InTagNameState implements State {
 
         if (character == TAG_START) {
             this.nameBuffer += ENCODED_TAG_START;
+
+            return "";
         }
 
         if (character == TAG_END) {

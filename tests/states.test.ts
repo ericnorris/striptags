@@ -227,6 +227,21 @@ describe("InTagNameState", () => {
         expect(got).toEqual(want);
         expect(endState).toBeInstanceOf(InCommentState);
     });
+
+    it("should encode '<' characters within the tag name", () => {
+        const start = new InTagNameState({
+            ...OptionsWithEncodingEnabled,
+            allowedTags: new Set(["&lt;&lt;&lt;"]),
+        });
+
+        const text = "<<<>";
+        const want = `<&lt;&lt;&lt;>`;
+
+        const [got, endState] = consumeStringUntilTransitionOrEOF(start, text);
+
+        expect(got).toEqual(want);
+        expect(endState).toBeInstanceOf(InPlaintextState);
+    });
 });
 
 describe("InTagState", () => {
