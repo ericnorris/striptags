@@ -56,6 +56,10 @@
     }
 
     function striptags_internal(html, context) {
+        if (typeof html != "string") {
+            throw new TypeError("'html' parameter must be a string");
+        }
+
         let allowable_tags  = context.allowable_tags;
         let tag_replacement = context.tag_replacement;
 

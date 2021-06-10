@@ -157,4 +157,13 @@ describe('striptags', function() {
             assert.equal(part_three, '< amet');
         });
     });
+
+    it('GHSL-2021-074', function() {
+        assert.throws(
+            function() {
+                striptags(["type-confusion"]);
+            },
+            TypeError,
+        );
+    });
 });
