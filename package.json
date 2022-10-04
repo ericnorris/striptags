@@ -18,8 +18,13 @@
         "tags"
     ],
     "main": "dist/cjs/striptags.js",
-    "module": "dist/es6/striptags.js",
     "types": "dist/es6/striptags.d.ts",
+    "type": "module",
+    "exports": {
+        "import": "./dist/es6/striptags.js",
+        "require": "./dist/cjs/striptags.cjs",
+        "types": "./dist/es6/striptags.d.ts"
+    },
     "files": [
         "dist/"
     ],
