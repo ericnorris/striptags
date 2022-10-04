@@ -19,6 +19,7 @@ export default [
             {
                 format: "cjs",
                 dir: "dist/cjs",
+                exports: "named",
             },
         ],
         plugins: [typescript()],

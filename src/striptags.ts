@@ -37,3 +37,5 @@ export class StateMachine {
 export function striptags(text: string, options: Partial<StateMachineOptions> = {}): string {
     return new StateMachine(options).consume(text);
 }
+
+export default striptags;
