@@ -19,6 +19,7 @@ export default [
             {
                 format: "cjs",
                 dir: "dist/cjs",
+                entryFileNames: "[name].cjs",
                 exports: "named",
             },
         ],
